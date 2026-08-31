@@ -1,0 +1,43 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Lighting Console",
+        "description": "Set up the Lighting Console. Nothing to configure here — the rig and your shows are managed from the console card itself. To pair a Hue bridge for effects, use Reconfigure afterwards."
+      },
+      "reconfigure": {
+        "title": "Hue bridge",
+        "description": "The address of the Hue bridge the console should use for effects. Only genuine Hue colour lights in an entertainment area can be driven by effects; everything else in the rig is controlled through Home Assistant as normal.",
+        "data": {
+          "host": "Bridge address"
+        }
+      },
+      "link": {
+        "title": "Press the link button",
+        "description": "Press the round button on top of {bridge}, then select Submit within 30 seconds.\n\nThis grants the console its own application key and a client key. The client key is what lets effects stream to the bridge — without it, effects could never run."
+      }
+    },
+    "error": {
+      "cannot_connect": "The bridge did not answer at that address. Check the address and that Home Assistant can reach it.",
+      "not_a_bridge": "Something answered at that address, but it is not a Hue bridge.",
+      "link_button_not_pressed": "The link button was not pressed in time. Press the round button on top of the bridge, then select Submit within 30 seconds.",
+      "pairing_failed": "Pairing failed. Check the Home Assistant log for the reason the bridge gave.",
+      "unknown": "Something unexpected went wrong. Check the Home Assistant log."
+    },
+    "abort": {
+      "single_instance_allowed": "Lighting Console is already set up. Only one console instance is supported.",
+      "reconfigure_successful": "Paired with the Hue bridge."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Effect performance",
+        "description": "How many effect commands the console may have in flight to the Hue bridge at once.\n\nLower is more responsive to Stop and the next cue; higher keeps the bridge busier, so a fast strobe looks smoother. The default of 2 stops well within a second. Raise it only if effects look sluggish on a large rig, and remember that every extra frame in flight is extra delay before the rig goes still.",
+        "data": {
+          "max_frames_in_flight": "Frames in flight"
+        }
+      }
+    }
+  }
+}
