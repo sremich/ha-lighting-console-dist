@@ -104,11 +104,14 @@ Give it a dashboard of its own if you can. The card is tall, it is the thing
 you will be looking at during a show, and a dashboard called *Console* is one
 tap away on a phone or a tablet at the back of the room.
 
-**If the card says "Custom element doesn't exist" on a brand-new install,** it
-needs one more restart of Home Assistant, and the console raises a
-notification telling you so. This happens exactly once, on the first install —
-see [Installation](https://github.com/sremich/ha-lighting-console-dist/wiki/Installation#why-the-second-restart)
-for why.
+**If the card ever says "Configuration error" or "Custom element doesn't
+exist",** reload the page. The console is built so that this does not happen
+on a restart, an update or a first install, and the release harness measures
+exactly that — the one exception is updating from 0.2.0 or earlier, which
+still has the window on that single upgrade boot; reload once and it is gone
+for good. If it happens anywhere else, and reloading fixes it, please report
+it with the Home Assistant version and roughly when after a restart the page
+was opened — it is a bug, not something to live with.
 
 ## Running a show
 

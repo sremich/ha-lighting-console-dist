@@ -33,18 +33,19 @@ _REGISTERED_KEY = "lighting_console_frontend_registered"
 
 
 def _async_restart_notice(hass: HomeAssistant, *, show: bool) -> None:
-    """Ask the operator, in the interface, for the one restart that finishes it.
+    """Ask the operator, in the interface, for a restart — the fallback only.
 
     A log line cannot do this job. Home Assistant surfaces no INFO from a
     custom integration in either the container log or `home-assistant.log` —
     checked on a running instance, where even this integration's own "starting
     up" line is absent — so anything an operator is expected to act on has to
-    reach the interface. This is the one manual step in the install, and it is
-    the difference between a card that works and a card that shows
-    "Configuration error" after every restart, so it must not be missable.
+    reach the interface.
 
-    A fixed notification id means a restart replaces the notice rather than
-    stacking another copy, and clears it once the card is served from /local.
+    This is raised only when `/local` could not be served at all this boot
+    (see `_async_ensure_local_served`), which leaves the card on the
+    integration's own late route. A fixed notification id means a restart
+    replaces the notice rather than stacking another copy, and it is dismissed
+    the moment the card is served from /local.
     """
     try:
         from homeassistant.components import persistent_notification
@@ -58,15 +59,15 @@ def _async_restart_notice(hass: HomeAssistant, *, show: bool) -> None:
     persistent_notification.async_create(
         hass,
         (
-            "The Lighting Console card is installed, but Home Assistant needs "
-            "one more restart before it can be served reliably.\n\n"
-            "Until you restart, the console may show **Configuration error** "
-            "on a dashboard opened in the first few seconds after Home "
-            "Assistant starts; reloading the page works around it.\n\n"
-            "Go to **Settings → System → Restart**. You only have to do this "
-            "once."
+            "The Lighting Console card is installed, but Home Assistant could "
+            "not serve it from `/local` on this start, so it is served from "
+            "the integration instead.\n\n"
+            "Until the next restart, a dashboard opened in the first few "
+            "seconds after Home Assistant starts may show **Configuration "
+            "error**; reloading the page fixes it.\n\n"
+            "Go to **Settings → System → Restart** at a convenient moment."
         ),
-        title="Lighting Console: one more restart",
+        title="Lighting Console: restart when convenient",
         notification_id=RESTART_NOTIFICATION_ID,
     )
 
@@ -90,6 +91,43 @@ def _local_is_served(hass: HomeAssistant) -> bool:
     return False
 
 
+async def _async_ensure_local_served(hass: HomeAssistant, www_root: Path) -> bool:
+    """Make sure `/local` -> `config/www` is routed, registering it if not.
+
+    On a first install `config/www` may not have existed when `frontend`
+    started, so `frontend` never registered `/local`, and nothing will until
+    the next boot. Earlier versions pointed Lovelace at the integration's own
+    route in the meantime and asked for a restart — but that restart still
+    began with the persisted resource naming the late route, so the boot the
+    operator was told would fix it had the very window it was meant to close,
+    and only the boot after that was clean.
+
+    Registering the route ourselves, exactly as `frontend` would have (same
+    prefix, same directory, same cache policy), lets the resource point at
+    `/local` from the first setup. On the next boot `frontend` finds the
+    directory and registers the route itself, early, and the probe above sees
+    it and we do nothing. An integration registering a route this general is
+    unusual, which is why it is done only when the frontend has not.
+    """
+    if _local_is_served(hass):
+        return True
+    try:
+        await hass.http.async_register_static_paths(
+            [StaticPathConfig(LOCAL_URL_PREFIX, str(www_root), cache_headers=True)]
+        )
+    except Exception:  # registering must never take setup down with it
+        _LOGGER.warning(
+            "Could not register %s -> %s; serving the console card from the "
+            "integration directory until the next restart",
+            LOCAL_URL_PREFIX,
+            www_root,
+            exc_info=True,
+        )
+        return False
+    _LOGGER.debug("Registered %s -> %s ourselves", LOCAL_URL_PREFIX, www_root)
+    return True
+
+
 def _publish_to_www(www_root: Path, bundle: Path, digest: str) -> str | None:
     """Copy the bundle under `config/www`, content-addressed. Returns its name.
 
@@ -108,12 +146,22 @@ def _publish_to_www(www_root: Path, bundle: Path, digest: str) -> str | None:
             staging = target.with_suffix(".js.part")
             shutil.copyfile(bundle, staging)
             staging.replace(target)
-        # One build's copy is all that is ever wanted. Old ones are dead
-        # weight, and a stale one left behind is a card that could be served
-        # to somebody by an equally stale Lovelace resource.
-        for old in target_dir.glob(f"{CARD_STEM}-*.js"):
-            if old.name != name:
-                old.unlink(missing_ok=True)
+        # Keep the copy this one replaces, and prune everything older.
+        #
+        # The persisted Lovelace resource still names the previous build until
+        # this setup rewrites it, and a dashboard opened before that moment
+        # has already read the list. Deleting the previous copy here turned
+        # that page's one fetch into a 404 — the permanent Configuration
+        # error, on the one boot after every update. Serving the previous
+        # build to that page instead is the deterministic outcome: it runs
+        # the old card against the new backend until reloaded, and the card
+        # shows the version mismatch in red rather than dying.
+        others = sorted(
+            (p for p in target_dir.glob(f"{CARD_STEM}-*.js") if p.name != name),
+            key=lambda p: p.stat().st_mtime_ns,
+        )
+        for old in others[:-1]:
+            old.unlink(missing_ok=True)
     except OSError:
         _LOGGER.warning(
             "Could not publish the console card into %s; falling back to "
@@ -205,31 +253,25 @@ async def async_register_card(hass: HomeAssistant) -> bool:
     # does not reload, so it survives every foreground for as long as the app
     # lives. Publishing under `config/www` removes the 404 rather than racing
     # it. See DECISIONS.md, 2026-08-29.
+    www_root = Path(hass.config.path("www"))
     published = await hass.async_add_executor_job(
-        _publish_to_www, Path(hass.config.path("www")), card_path, digest
+        _publish_to_www, www_root, card_path, digest
     )
-    if published and _local_is_served(hass):
+    if published and await _async_ensure_local_served(hass, www_root):
         module_url = f"{LOCAL_URL_PREFIX}/{WWW_SUBDIR}/{published}"
-        # Whatever asked for a restart has now happened.
         _async_restart_notice(hass, show=False)
     elif published:
         _async_restart_notice(hass, show=True)
-        _LOGGER.warning(
-            "Published the console card to config/www/%s/%s, but /local is not "
-            "served yet -- Home Assistant only registers it when config/www "
-            "exists at startup. Serving from the integration directory for now; "
-            "restart Home Assistant to close the startup window for good.",
-            WWW_SUBDIR,
-            published,
-        )
 
     # Route 1: a Lovelace resource. This is the one that actually matters.
     # Lovelace fetches its resource list when it opens a dashboard, and the
     # list is persisted in `.storage`, so it answers correctly from the moment
     # Lovelace answers at all — unlike the index tag, which is written at
-    # setup time. It does not make the card immune to a restart: the URL it
-    # hands out still 404s until the static path above is registered, which is
-    # why that path is now served with cache headers.
+    # setup time. Under `/local` the URL it hands out is served just as early,
+    # and the previous build's copy is kept so the URL persisted by the last
+    # boot still answers on this one. On the fallback route the URL 404s until
+    # the static path above is registered, which is why that path is served
+    # with cache headers.
     await _async_register_lovelace_resource(hass, module_url)
 
     if "frontend" in hass.config.components:
@@ -256,6 +298,20 @@ async def async_register_card(hass: HomeAssistant) -> bool:
     return True
 
 
+def _is_our_resource_url(url: object) -> bool:
+    """Whether a Lovelace resource URL is one this integration registered.
+
+    Two shapes exist: the integration's own route, with a `?v=` cache-buster,
+    and the content-addressed copy under `/local`. Both are ours, and both
+    must be recognised — 0.3.0 matched only the first, so once it had moved a
+    resource to `/local` it no longer recognised its own entry.
+    """
+    path = str(url or "").split("?")[0]
+    return path == CARD_URL_PATH or path.startswith(
+        f"{LOCAL_URL_PREFIX}/{WWW_SUBDIR}/{CARD_STEM}-"
+    )
+
+
 async def _async_register_lovelace_resource(hass: HomeAssistant, url: str) -> bool:
     """Add the card to Lovelace's resource list, idempotently.
 
@@ -273,12 +329,15 @@ async def _async_register_lovelace_resource(hass: HomeAssistant, url: str) -> bo
 
     A Lovelace resource is not subject to *that*, because the list is
     persisted and so answers correctly from the moment Lovelace answers at
-    all. It does not make the card immune to a restart, and an earlier version
-    of this docstring claimed it did. The URL it hands out points at a static
-    path registered in the same setup call, so for ~5 s after a restart the
-    resource is listed and the bundle behind it 404s. Cache headers on that
-    path are what cover the remainder: a browser holding the bundle makes no
-    request. See DECISIONS.md, 2026-08-28, both entries.
+    all. On its own it does not make the card immune to a restart, and an
+    earlier version of this docstring claimed it did: on the fallback route the
+    URL points at a static path registered in the same setup call, so for ~5 s
+    after a restart the resource is listed and the bundle behind it 404s.
+    That is why the card is published under `/local` (see
+    `async_register_card`) and why the previous build's copy is kept there:
+    the URL this list persisted on the last boot must answer on this one, from
+    the first moment the dashboard does. See DECISIONS.md, 2026-08-28 (both
+    entries), 2026-08-31 and 2026-09-16.
 
     Returns False when the resource collection is unavailable or read-only —
     a YAML-mode dashboard, or a Home Assistant without Lovelace — which is not
@@ -300,15 +359,29 @@ async def _async_register_lovelace_resource(hass: HomeAssistant, url: str) -> bo
         if hasattr(resources, "async_load") and not resources.loaded:
             await resources.async_load()
 
-        for item in resources.async_items():
-            if str(item.get("url", "")).split("?")[0] == CARD_URL_PATH:
-                if item.get("url") == url:
-                    return True
-                # Same card, stale cache-buster: point it at this build rather
-                # than accumulating a resource per version ever installed.
-                await resources.async_update_item(item["id"], {"url": url})
+        ours = [
+            item
+            for item in resources.async_items()
+            if _is_our_resource_url(item.get("url"))
+        ]
+        if ours:
+            first, *extra = ours
+            if first.get("url") != url:
+                # Same card, earlier URL: point it at this build rather than
+                # accumulating a resource per version ever installed.
+                await resources.async_update_item(first["id"], {"url": url})
                 _LOGGER.debug("Updated the console card Lovelace resource")
-                return True
+            # 0.3.0 and 0.3.1 recognised only the integration-route shape, so
+            # every restart on /local created another copy of the same
+            # resource. Harmless to a browser — one module URL loads once —
+            # but after an update each copy would name a bundle that no
+            # longer exists. Remove them, and anything else of ours that is
+            # not the one entry just settled.
+            for item in extra:
+                await resources.async_delete_item(item["id"])
+            if extra:
+                _LOGGER.debug("Removed %d duplicate console card resources", len(extra))
+            return True
 
         await resources.async_create_item({"res_type": "module", "url": url})
         _LOGGER.debug("Added the console card as a Lovelace resource")

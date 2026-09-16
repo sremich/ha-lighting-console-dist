@@ -879,7 +879,7 @@ This cannot be undone.`)&&this._run("lighting_console/shows/delete",{show_id:t.i
               </ul>
             `}
       </section>
-    `}_renderBuildStamp(){let t=this._info?`${this._info.version} \xB7 ${this._info.git_sha}`:"\u2014",r="0.3.1 \xB7 962dbdd9e05d",i=this._info!==void 0&&this._info.version!=="0.3.1";return a`
+    `}_renderBuildStamp(){let t=this._info?`${this._info.version} \xB7 ${this._info.git_sha}`:"\u2014",r="0.3.2 \xB7 38b33f1adc75",i=this._info!==void 0&&this._info.version!=="0.3.2";return a`
       <span class="stamp ${i?"mismatch":""}">
         card ${r} / backend ${t}
       </span>
@@ -1072,4 +1072,4 @@ This cannot be undone.`)&&this._run("lighting_console/shows/delete",{show_id:t.i
     .stamp.mismatch {
       color: var(--error-color, #db4437);
     }
-  `,p([R({attribute:!1})],_.prototype,"hass",2),p([g()],_.prototype,"_config",2),p([g()],_.prototype,"_info",2),p([g()],_.prototype,"_rig",2),p([g()],_.prototype,"_bridge",2),p([g()],_.prototype,"_candidates",2),p([g()],_.prototype,"_error",2),p([g()],_.prototype,"_busy",2),p([g()],_.prototype,"_adding",2),p([g()],_.prototype,"_filter",2),p([g()],_.prototype,"_tab",2);W(At,_);wt({type:At,name:"Lighting Console",description:"Theatre lighting console \u2014 rig, cue list and effects.",preview:!1,documentationURL:"https://github.com/sremich/ha-lighting-console"});console.info("%c LIGHTING-CONSOLE %c 0.3.1 (962dbdd9e05d) ","color:#fff;background:#3b5bdb;font-weight:700","color:#3b5bdb;background:#eef");export{_ as LightingConsoleCard};
+  `,p([R({attribute:!1})],_.prototype,"hass",2),p([g()],_.prototype,"_config",2),p([g()],_.prototype,"_info",2),p([g()],_.prototype,"_rig",2),p([g()],_.prototype,"_bridge",2),p([g()],_.prototype,"_candidates",2),p([g()],_.prototype,"_error",2),p([g()],_.prototype,"_busy",2),p([g()],_.prototype,"_adding",2),p([g()],_.prototype,"_filter",2),p([g()],_.prototype,"_tab",2);W(At,_);wt({type:At,name:"Lighting Console",description:"Theatre lighting console \u2014 rig, cue list and effects.",preview:!1,documentationURL:"https://github.com/sremich/ha-lighting-console"});console.info("%c LIGHTING-CONSOLE %c 0.3.2 (38b33f1adc75) ","color:#fff;background:#3b5bdb;font-weight:700","color:#3b5bdb;background:#eef");export{_ as LightingConsoleCard};
