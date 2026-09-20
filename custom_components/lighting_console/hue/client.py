@@ -12,7 +12,9 @@ Two API generations are unavoidable here:
   equivalent; it is also the only way to obtain the *client key*, which is
   the pre-shared key the Entertainment stream authenticates with.
 * **Everything else** is CLIP v2 under `/clip/v2/resource/...`, authenticated
-  with the `hue-application-key` header.
+  with the `hue-application-key` header. The writes are the console's own
+  zone and the scenes it compiles into it; nothing else on the bridge is
+  ever written.
 """
 
 from __future__ import annotations
@@ -114,8 +116,11 @@ class HueBridgeClient:
                         "The bridge rejected the application key. Pair again."
                     )
                 if response.status >= 500:
+                    # The bridge explains itself in the body when it can —
+                    # 507 on the 201st scene says "scene limit reached".
                     raise HueApiError(
                         f"The bridge returned HTTP {response.status} for {path}"
+                        + await self._error_detail(response)
                     )
                 try:
                     return await response.json(content_type=None)
@@ -133,6 +138,19 @@ class HueBridgeClient:
             raise BridgeUnreachable(
                 f"Could not reach the bridge at {self._host}: {exc}"
             ) from exc
+
+    @staticmethod
+    async def _error_detail(response: aiohttp.ClientResponse) -> str:
+        try:
+            payload = await response.json(content_type=None)
+        except ValueError:
+            return ""
+        errors = payload.get("errors") if isinstance(payload, dict) else None
+        if not errors:
+            return ""
+        return ": " + "; ".join(
+            str(error.get("description", error)) for error in errors
+        )
 
     @staticmethod
     def _unwrap_v2(payload: Any, resource: str) -> list[dict[str, Any]]:
@@ -324,3 +342,58 @@ class HueBridgeClient:
         return [
             HueScene.from_resource(item) for item in self._unwrap_v2(payload, "scenes")
         ]
+
+    # ------------------------------------------------------------------
+    # CLIP v2 writes: the console's zone and its scenes, nothing else
+    # ------------------------------------------------------------------
+
+    async def _write(self, method: str, path: str, body: dict[str, Any]) -> str:
+        """POST/PUT/DELETE, returning the affected resource id."""
+        payload = await self._request(method, path, json_body=body)
+        data = self._unwrap_v2(payload, path)
+        return str(data[0].get("rid", "")) if data else ""
+
+    async def async_create_zone(self, name: str, light_ids: list[str]) -> str:
+        return await self._write(
+            "POST",
+            "/clip/v2/resource/zone",
+            {
+                "type": "zone",
+                "metadata": {"name": name, "archetype": "other"},
+                "children": [{"rid": rid, "rtype": "light"} for rid in light_ids],
+            },
+        )
+
+    async def async_set_zone_lights(self, zone_id: str, light_ids: list[str]) -> None:
+        await self._write(
+            "PUT",
+            f"/clip/v2/resource/zone/{zone_id}",
+            {"children": [{"rid": rid, "rtype": "light"} for rid in light_ids]},
+        )
+
+    async def async_create_scene(
+        self, name: str, zone_id: str, actions: list[dict[str, Any]], appdata: str
+    ) -> str:
+        """Create a scene in a zone. `appdata` is the bridge's own 16-char
+        slot for an application's tag; the console keeps its look hash there."""
+        return await self._write(
+            "POST",
+            "/clip/v2/resource/scene",
+            {
+                "type": "scene",
+                "metadata": {"name": name[:32], "appdata": appdata[:16]},
+                "group": {"rid": zone_id, "rtype": "zone"},
+                "actions": actions,
+            },
+        )
+
+    async def async_recall_scene(self, scene_id: str, duration_ms: int) -> None:
+        await self._write(
+            "PUT",
+            f"/clip/v2/resource/scene/{scene_id}",
+            {"recall": {"action": "active", "duration": max(0, int(duration_ms))}},
+        )
+
+    async def async_delete_scene(self, scene_id: str) -> None:
+        payload = await self._request("DELETE", f"/clip/v2/resource/scene/{scene_id}")
+        self._unwrap_v2(payload, "scene delete")

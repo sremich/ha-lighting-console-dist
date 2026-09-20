@@ -160,6 +160,9 @@ class HueScene:
     group_id: str
     group_type: str
     actions: list[HueSceneAction] = field(default_factory=list)
+    appdata: str = ""
+    """The bridge's free 16-character tag for the app that made the scene.
+    The console stores its look hash here."""
     raw: dict[str, Any] = field(default_factory=dict, repr=False)
 
     @classmethod
@@ -176,6 +179,7 @@ class HueScene:
             group_id=group.get("rid", ""),
             group_type=group.get("rtype", ""),
             actions=actions,
+            appdata=str(metadata.get("appdata") or ""),
             raw=data,
         )
 

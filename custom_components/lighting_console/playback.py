@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+from collections.abc import Awaitable, Callable
 from typing import Any
 
 from homeassistant.components.light import (
@@ -224,6 +225,13 @@ class Playback:
         self._hass = hass
         self._effects = effects
         self._current_cue_id: str | None = None
+        self.scene_recall: (
+            Callable[[Cue, float], Awaitable[list[LightLevel]]] | None
+        ) = None
+        """Set by the console once a bridge is paired: recall the cue's
+        compiled scene and return the levels the scene did NOT cover, which
+        still go through Home Assistant. Raising means "do it all per light"."""
+        self._fallback_logged = False
 
     @property
     def current_cue_id(self) -> str | None:
@@ -273,7 +281,27 @@ class Playback:
             self._current_cue_id = cue.id
             return
 
-        calls = build_calls(self._hass, cue.levels, cue.fade if fade is None else fade)
+        fade = cue.fade if fade is None else fade
+        levels = cue.levels
+        if cue.bridge_scene_id and self.scene_recall is not None:
+            # One request moves every Hue lamp together; only what the scene
+            # does not cover is left for the per-light path.
+            # ponytail: the bridge takes ~1 scene recall/s, so two looks a
+            # second is the ceiling here. The Entertainment stream is the
+            # upgrade path for anything faster.
+            try:
+                levels = await self.scene_recall(cue, fade)
+            except Exception as err:
+                if not self._fallback_logged:
+                    _LOGGER.warning(
+                        "Scene recall failed (%s); firing %s per light instead. "
+                        "Further fallbacks are logged at debug level.",
+                        err,
+                        cue.label,
+                    )
+                    self._fallback_logged = True
+                _LOGGER.debug("Scene recall failed for %s: %s", cue.label, err)
+        calls = build_calls(self._hass, levels, fade)
         # Fired together rather than in sequence: six sequential awaits put a
         # visible ripple across the rig on a snap cue.
         await asyncio.gather(

@@ -48,6 +48,16 @@ Two very different APIs, used deliberately:
 | Used for | discovery, pairing, entertainment areas, static looks | effects |
 | Limits | rate-limited, staggers across bulbs | colour-capable Hue lights only, one area at a time per bridge |
 
+Static looks now compile to Hue bridge scenes in a dedicated zone called
+"Lighting Console". GO on a look sends one scene recall request to the bridge,
+moving every lamp at once with the cue's fade, instead of ~10 single-light
+REST commands a second. This is the first release that writes anything to
+the bridge itself — earlier versions only read lights and rooms and sent
+ordinary light commands. The bridge allows 200 scenes total, shared with
+scenes in the Hue app, so a bridge already carrying many app scenes may not
+have room for every look. If the limit is hit, that look falls back to
+per-light and the card shows a warning.
+
 While a stream is active the bridge ignores REST commands for the lights in
 that area, so handoff between the two is explicit and driven by cue content —
 never by the operator. A global **Release** always ends the stream and hands
@@ -132,6 +142,9 @@ are never rig members. A group is one broadcast that lands after every lamp's
 own command and repaints the whole stage in one averaged colour, so a look
 recorded with a group in the rig plays back wrong. Add each lamp individually.
 
+The console makes one zone of its own on the bridge, named "Lighting Console",
+holding the rig's Hue lights — leave it alone in the Hue app.
+
 ![The Rig tab, listing six fixtures with their entity IDs](docs/images/rig.png)
 
 The order matters: it is the order a chase walks the rig in. Reorder it so it
@@ -185,6 +198,11 @@ the cue currently on stage is highlighted in the list.
 **Release** is the panic button, and it is meant to be used like one. It stops
 any running effect first, then blacks out, and it hands every light back to
 normal Home Assistant control.
+
+GO on a look recalls a Hue bridge scene, moving every lamp at once with the
+look's fade. The card's status corner (bottom right) shows the number of looks
+compiled to the bridge ("N scenes"), or a warning if the bridge couldn't take
+them and the cue is falling back to per-light instead.
 
 ### 4. Effect cues
 

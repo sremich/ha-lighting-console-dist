@@ -11,6 +11,7 @@ run effects. Bridge failures degrade this object, they never break it.
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from typing import Any
 
@@ -28,7 +29,7 @@ from .const import (
     CONF_MAX_FRAMES_IN_FLIGHT,
     DEFAULT_MAX_FRAMES_IN_FLIGHT,
 )
-from .cues import Cue, ShowStore
+from .cues import Cue, CueKind, LightLevel, ShowStore
 from .effects import EffectEngine
 from .hue import (
     EntertainmentConfiguration,
@@ -40,9 +41,21 @@ from .hue import (
 )
 from .importer import ImportResult, build_light_map, cues_from_scenes
 from .playback import Playback, capture
-from .rig import Capability, RigMember, RigStore, classify, is_group_light
+from .rig import (
+    Capability,
+    RigMember,
+    RigStore,
+    classify,
+    hue_light_id_for_entity,
+    is_group_light,
+)
+from .scenes import SCENE_PREFIX, look_key, scene_actions
 
 _LOGGER = logging.getLogger(__name__)
+
+#: The one zone the console owns on the bridge. It holds exactly the rig's
+#: Hue lights, and every compiled look is a scene in it.
+ZONE_NAME = "Lighting Console"
 
 
 class Console:
@@ -58,12 +71,17 @@ class Console:
             entry.options.get(CONF_MAX_FRAMES_IN_FLIGHT, DEFAULT_MAX_FRAMES_IN_FLIGHT),
         )
         self.playback = Playback(hass, self.effects)
+        self.playback.scene_recall = self.async_recall_scene
 
         self._client: HueBridgeClient | None = None
         self._hue_lights: dict[str, HueLight] = {}
         self._entertainment: list[EntertainmentConfiguration] = []
         self._bridge_error: str | None = None
         self._bridge_loaded = False
+        self._zone_id: str | None = None
+        self._scene_error: str | None = None
+        self._scene_count = 0
+        self._compile_lock = asyncio.Lock()
 
     # ------------------------------------------------------------------
     # Lifecycle
@@ -130,7 +148,49 @@ class Console:
             len(lights),
             len(entertainment),
         )
+        await self.async_sync_zone()
+        self.schedule_compile()
         return True
+
+    def hue_light_ids(self) -> dict[str, str]:
+        """Rig entity id -> Hue light id, for the members that are Hue lights."""
+        out: dict[str, str] = {}
+        for entity_id in self.rig.entity_ids:
+            light_id = hue_light_id_for_entity(self._hass, entity_id, self._hue_lights)
+            if light_id is not None:
+                out[entity_id] = light_id
+        return out
+
+    async def async_sync_zone(self) -> None:
+        """Make the console's zone hold exactly the rig's Hue lights. Never raises.
+
+        Created on first contact, membership rewritten whenever it differs.
+        A zone with no lights is legal — it is how a bridge with nothing
+        paired still gets the scene machinery tested.
+        """
+        if self._client is None or not self._bridge_loaded:
+            return
+        wanted = list(self.hue_light_ids().values())
+        try:
+            zone = next(
+                (
+                    group
+                    for group in await self._client.async_get_groups()
+                    if group.type == "zone" and group.name == ZONE_NAME
+                ),
+                None,
+            )
+            if zone is None:
+                self._zone_id = await self._client.async_create_zone(ZONE_NAME, wanted)
+            else:
+                self._zone_id = zone.id
+                if sorted(zone.light_ids) != sorted(wanted):
+                    await self._client.async_set_zone_lights(zone.id, wanted)
+        except Exception as err:  # bridge trouble degrades, never breaks
+            self._scene_error = f"Could not update the console's zone: {err}"
+            _LOGGER.warning(self._scene_error)
+            return
+        self._scene_error = None
 
     def bridge_status(self) -> dict[str, Any]:
         """What the card shows about the bridge. Never includes a credential."""
@@ -143,6 +203,11 @@ class Console:
             "reachable": self._bridge_loaded and self._bridge_error is None,
             "error": self._bridge_error,
             "light_count": len(self._hue_lights),
+            # The compiled looks: how many scenes the console holds on the
+            # bridge, and why the last compile or zone update failed, if it
+            # did. The card paints the error in its status corner.
+            "scene_count": self._scene_count,
+            "scene_error": self._scene_error,
             "entertainment_areas": [
                 {
                     "id": configuration.id,
@@ -154,6 +219,110 @@ class Console:
                 for configuration in self._entertainment
             ],
         }
+
+    # ------------------------------------------------------------------
+    # Looks as bridge scenes
+    # ------------------------------------------------------------------
+
+    def schedule_compile(self) -> None:
+        """Compile in the background: a whole show is one create per look,
+        and nobody should wait on that to see a cue list."""
+        if self._client is not None:
+            self._hass.async_create_task(self.async_compile_active_show())
+
+    async def async_compile_active_show(self) -> None:
+        """Every look of the active show becomes a scene in the zone.
+
+        Identical looks share one scene: the look's key is kept in the
+        scene's `appdata`, so the scene list *is* the index and a restart
+        cannot lose it. A look that has no Hue lights compiles to nothing
+        and keeps going through Home Assistant. Never raises; the first
+        error stops the pass and is shown in the bridge status.
+
+        ponytail: one scene create per look, ~100 ms each, so a fresh
+        106-cue show takes ~10 s to compile. Fine in the background; batch
+        creates if the bridge ever grows a bulk endpoint.
+        """
+        if self._client is None or self._zone_id is None:
+            return
+        async with self._compile_lock:
+            show = self.shows.active_show
+            light_ids = self.hue_light_ids()
+            changed = False
+            try:
+                scenes = await self._client.async_get_scenes()
+                mine = {
+                    scene.appdata: scene.id
+                    for scene in scenes
+                    if scene.group_id == self._zone_id
+                    and scene.name.startswith(SCENE_PREFIX)
+                }
+                for cue in show.cues if show else []:
+                    actions = (
+                        scene_actions(cue.levels, light_ids)
+                        if cue.kind is CueKind.LOOK
+                        else []
+                    )
+                    scene_id = None
+                    if actions:
+                        key = look_key(actions)
+                        scene_id = mine.get(key)
+                        if scene_id is None:
+                            assert show is not None
+                            scene_id = await self._client.async_create_scene(
+                                f"{SCENE_PREFIX}{show.name} {cue.label}",
+                                self._zone_id,
+                                actions,
+                                key,
+                            )
+                            mine[key] = scene_id
+                    if cue.bridge_scene_id != scene_id:
+                        cue.bridge_scene_id = scene_id
+                        changed = True
+                # Whatever nothing in the active show references any more —
+                # a deleted cue, a re-recorded look, the previous show — goes.
+                wanted = {cue.bridge_scene_id for cue in show.cues} if show else set()
+                for key, scene_id in list(mine.items()):
+                    if scene_id not in wanted:
+                        await self._client.async_delete_scene(scene_id)
+                        del mine[key]
+                self._scene_count = len(mine)
+                self._scene_error = None
+            except Exception as err:  # bridge trouble degrades, never breaks
+                self._scene_error = f"Could not compile looks to the bridge: {err}"
+                _LOGGER.warning(self._scene_error)
+            if changed:
+                await self.shows.async_save()
+
+    async def async_purge_scenes(self) -> int:
+        """Delete every scene the console ever made, anywhere on the bridge.
+
+        The recovery tool for a bridge full of stale `LC` scenes. Cues forget
+        their scene ids and the active show is compiled afresh.
+        """
+        if self._client is None:
+            return 0
+        async with self._compile_lock:
+            removed = 0
+            for scene in await self._client.async_get_scenes():
+                if scene.name.startswith(SCENE_PREFIX):
+                    await self._client.async_delete_scene(scene.id)
+                    removed += 1
+            for show in self.shows.shows:
+                for cue in show.cues:
+                    cue.bridge_scene_id = None
+            await self.shows.async_save()
+            self._scene_count = 0
+        self.schedule_compile()
+        return removed
+
+    async def async_recall_scene(self, cue: Cue, fade: float) -> list[LightLevel]:
+        """Recall the cue's scene; return the levels it did not cover."""
+        if self._client is None or not cue.bridge_scene_id:
+            raise RuntimeError("no bridge")
+        await self._client.async_recall_scene(cue.bridge_scene_id, int(fade * 1000))
+        covered = self.hue_light_ids()
+        return [level for level in cue.levels if level.entity_id not in covered]
 
     # ------------------------------------------------------------------
     # Rig

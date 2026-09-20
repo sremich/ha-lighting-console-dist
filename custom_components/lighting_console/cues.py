@@ -167,8 +167,13 @@ class Cue:
     created: str = ""
     modified: str = ""
 
+    bridge_scene_id: str | None = None
+    """LOOK only. The bridge scene this look was compiled to, if any. A cache
+    of bridge state, never the truth: the levels are. Written only when set
+    so older shows round-trip unchanged."""
+
     def to_dict(self) -> dict[str, Any]:
-        return {
+        out = {
             "id": self.id,
             "label": self.label,
             "kind": str(self.kind),
@@ -181,6 +186,9 @@ class Cue:
             "created": self.created,
             "modified": self.modified,
         }
+        if self.bridge_scene_id:
+            out["bridge_scene_id"] = self.bridge_scene_id
+        return out
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> Cue | None:
@@ -211,6 +219,9 @@ class Cue:
             notes=str(data.get("notes") or ""),
             created=str(data.get("created") or ""),
             modified=str(data.get("modified") or ""),
+            bridge_scene_id=data.get("bridge_scene_id")
+            if isinstance(data.get("bridge_scene_id"), str)
+            else None,
         )
 
 

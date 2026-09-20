@@ -13,8 +13,8 @@ NAME: Final = "Lighting Console"
 # from the VERSION file and the git SHA; the values committed here are the
 # development placeholders. The version lives ONLY in VERSION — never edit
 # BUILD_VERSION by hand.
-BUILD_VERSION: Final = "0.3.3"
-BUILD_GIT_SHA: Final = "ec4c21b3ec85"
+BUILD_VERSION: Final = "0.4.0"
+BUILD_GIT_SHA: Final = "f844f4da27c4"
 
 # Where the card is published so the frontend can always fetch it.
 #

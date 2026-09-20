@@ -32,6 +32,7 @@ WS_TYPE_RIG_REORDER = f"{DOMAIN}/rig/reorder"
 WS_TYPE_RIG_CANDIDATES = f"{DOMAIN}/rig/candidates"
 WS_TYPE_BRIDGE_STATUS = f"{DOMAIN}/bridge/status"
 WS_TYPE_BRIDGE_REFRESH = f"{DOMAIN}/bridge/refresh"
+WS_TYPE_BRIDGE_SCENES_PURGE = f"{DOMAIN}/bridge/scenes/purge"
 
 WS_TYPE_SHOW_LIST = f"{DOMAIN}/shows/list"
 WS_TYPE_SHOW_CREATE = f"{DOMAIN}/shows/create"
@@ -81,6 +82,7 @@ def async_register_commands(hass: HomeAssistant) -> None:
         websocket_rig_candidates,
         websocket_bridge_status,
         websocket_bridge_refresh,
+        websocket_bridge_scenes_purge,
         websocket_show_list,
         websocket_show_create,
         websocket_show_rename,
@@ -180,6 +182,7 @@ async def websocket_rig_add(
     if (console := _require_console(hass, connection, msg)) is None:
         return
     added = await console.rig.async_add(msg["entity_ids"])
+    await console.async_sync_zone()
     connection.send_result(msg["id"], {"added": added} | console.rig_summary())
 
 
@@ -198,6 +201,7 @@ async def websocket_rig_remove(
     if (console := _require_console(hass, connection, msg)) is None:
         return
     removed = await console.rig.async_remove(msg["entity_ids"])
+    await console.async_sync_zone()
     connection.send_result(msg["id"], {"removed": removed} | console.rig_summary())
 
 
@@ -264,6 +268,20 @@ async def websocket_bridge_refresh(
     connection.send_result(
         msg["id"], console.bridge_status() | {"rig": console.rig_summary()}
     )
+
+
+@websocket_api.websocket_command({vol.Required("type"): WS_TYPE_BRIDGE_SCENES_PURGE})
+@websocket_api.async_response
+async def websocket_bridge_scenes_purge(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Delete every scene the console made on the bridge. A recovery tool."""
+    if (console := _require_console(hass, connection, msg)) is None:
+        return
+    removed = await console.async_purge_scenes()
+    connection.send_result(msg["id"], {"removed": removed, **console.bridge_status()})
 
 
 # ----------------------------------------------------------------------
@@ -358,6 +376,7 @@ async def websocket_show_delete(
         return
     await console.effects.async_stop()
     console.playback.reset()
+    console.schedule_compile()
     connection.send_result(msg["id"], console.show_summary())
 
 
@@ -377,6 +396,7 @@ async def websocket_show_activate(
         return
     # The playhead pointed into a different cue list and means nothing here.
     console.playback.reset()
+    console.schedule_compile()
     connection.send_result(msg["id"], console.show_summary())
 
 
@@ -431,6 +451,7 @@ async def websocket_cue_record(
     cue = await console.async_record_cue(
         name=msg.get("name", ""), at=msg.get("at"), fade=float(msg.get("fade", 0.0))
     )
+    console.schedule_compile()
     connection.send_result(
         msg["id"],
         {"cue": cue.to_dict() if cue else None, **console.show_summary()},
@@ -453,6 +474,7 @@ async def websocket_cue_rerecord(
     if cue is None:
         connection.send_error(msg["id"], ERR_NOT_FOUND, "No such cue.")
         return
+    console.schedule_compile()
     connection.send_result(msg["id"], {"cue": cue.to_dict(), **console.show_summary()})
 
 
@@ -526,6 +548,8 @@ async def websocket_cue_update(
     if cue is None:
         connection.send_error(msg["id"], ERR_NOT_FOUND, "No such cue.")
         return
+    if "levels" in msg["changes"]:
+        console.schedule_compile()
     connection.send_result(msg["id"], {"cue": cue.to_dict(), **console.show_summary()})
 
 
@@ -569,6 +593,7 @@ async def websocket_cue_delete(
     if not await console.shows.async_delete_cue(show.id, msg["cue_id"]):
         connection.send_error(msg["id"], ERR_NOT_FOUND, "No such cue.")
         return
+    console.schedule_compile()
     connection.send_result(msg["id"], console.show_summary())
 
 
@@ -804,6 +829,7 @@ async def websocket_import_run(
         )
         return
     console.playback.reset()
+    console.schedule_compile()
     connection.send_result(
         msg["id"], {"imported": result.to_dict(), **console.show_summary()}
     )
