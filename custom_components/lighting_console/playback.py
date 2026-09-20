@@ -42,6 +42,7 @@ from homeassistant.core import HomeAssistant, split_entity_id
 
 from .cues import Cue, CueKind, LightLevel
 from .effects import EffectEngine
+from .rig import is_group_light
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -138,7 +139,7 @@ def build_calls(
 
     for level in levels:
         domain = split_entity_id(level.entity_id)[0]
-        if domain not in SWITCHABLE_DOMAINS:
+        if domain not in SWITCHABLE_DOMAINS or is_group_light(hass, level.entity_id):
             continue
         can_fade = _supports_transition(hass, level.entity_id)
 

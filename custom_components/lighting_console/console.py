@@ -40,7 +40,7 @@ from .hue import (
 )
 from .importer import ImportResult, build_light_map, cues_from_scenes
 from .playback import Playback, capture
-from .rig import Capability, RigMember, RigStore, classify
+from .rig import Capability, RigMember, RigStore, classify, is_group_light
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -187,7 +187,9 @@ class Console:
         current = set(self.rig.entity_ids)
         candidates = []
         for state in self._hass.states.async_all(["light", "switch"]):
-            if state.entity_id in current:
+            if state.entity_id in current or is_group_light(
+                self._hass, state.entity_id
+            ):
                 continue
             candidates.append(
                 {

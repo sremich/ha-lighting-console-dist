@@ -152,6 +152,17 @@ EFFECTS: dict[str, EffectDefinition] = {
                 help="Time between one light lighting and the next.",
             ),
             EffectParam(
+                key="fade_in",
+                label="Fade in",
+                type="number",
+                default=0.1,
+                minimum=0,
+                maximum=10,
+                step=0.1,
+                unit="s",
+                help="How long each light takes to rise on its step.",
+            ),
+            EffectParam(
                 key="fade_out",
                 label="Fade out",
                 type="number",
@@ -178,7 +189,11 @@ EFFECTS: dict[str, EffectDefinition] = {
         params=[
             _TARGETS,
             EffectParam(
-                key="colors", label="Colour", type="color", default=[[255, 188, 113]]
+                key="colors",
+                label="Colours",
+                type="color",
+                default=[[255, 188, 113]],
+                help="One per light, cycled. One colour flashes everything in it.",
             ),
             _BRIGHTNESS,
             EffectParam(
@@ -213,7 +228,11 @@ EFFECTS: dict[str, EffectDefinition] = {
         params=[
             _TARGETS,
             EffectParam(
-                key="colors", label="Colour", type="color", default=[[255, 255, 255]]
+                key="colors",
+                label="Colours",
+                type="color",
+                default=[[255, 255, 255]],
+                help="One per light, cycled. One colour strobes everything in it.",
             ),
             _BRIGHTNESS,
             EffectParam(
@@ -527,6 +546,40 @@ class EffectEngine:
             },
         )
 
+    @staticmethod
+    def _spread(
+        targets: list[str], colors: list[list[int]]
+    ) -> list[tuple[list[int], list[str]]]:
+        """Colour i to target i, cycled: the targets grouped per distinct colour.
+
+        Will enters one colour per lamp, as chase lets him, and expects each
+        lamp to take its own. A single colour is still exactly one group. The
+        closing off uses the same grouping so each off shares its supersede
+        key with its on — an off keyed on all targets at once would share it
+        with none of them and could land ahead of a still-pending on.
+        """
+        by_color: dict[tuple[int, ...], list[str]] = {}
+        for index, entity_id in enumerate(targets):
+            by_color.setdefault(tuple(colors[index % len(colors)]), []).append(
+                entity_id
+            )
+        return [(list(rgb), entity_ids) for rgb, entity_ids in by_color.items()]
+
+    async def _light_on_spread(
+        self,
+        groups: list[tuple[list[int], list[str]]],
+        brightness_pct: int,
+        transition: float,
+    ) -> None:
+        for rgb, entity_ids in groups:
+            await self._light_on(entity_ids, rgb, brightness_pct, transition)
+
+    async def _light_off_spread(
+        self, groups: list[tuple[list[int], list[str]]], transition: float
+    ) -> None:
+        for _, entity_ids in groups:
+            await self._light_off(entity_ids, transition)
+
     async def _light_off(self, entity_ids: list[str], transition: float) -> None:
         self._send("turn_off", {"entity_id": entity_ids, "transition": transition})
 
@@ -534,6 +587,7 @@ class EffectEngine:
         colors = _colors(params, [[255, 147, 41]])
         brightness = _as_int(params, "brightness_pct", 100, 1, 100)
         step_ms = _as_int(params, "step_ms", 300, MIN_STEP_MS, 5000)
+        fade_in = _as_float(params, "fade_in", 0.1, 0.0, 10.0)
         fade_out = _as_float(params, "fade_out", 1.0, 0.0, 10.0)
         direction = params.get("direction", "forward")
         if direction not in ("forward", "reverse", "bounce"):
@@ -550,7 +604,7 @@ class EffectEngine:
         while True:
             entity = order[index % len(order)]
             color = colors[index % len(colors)]
-            await self._light_on([entity], color, brightness, min(0.1, step / 2))
+            await self._light_on([entity], color, brightness, fade_in)
             await asyncio.sleep(step)
             await self._light_off([entity], fade_out)
             index += 1
@@ -561,9 +615,10 @@ class EffectEngine:
         hold_ms = _as_int(params, "hold_ms", 200, 20, 5000)
         fade_out = _as_float(params, "fade_out", 0.5, 0.0, 10.0)
 
-        await self._light_on(targets, colors[0], brightness, 0)
+        groups = self._spread(targets, colors)
+        await self._light_on_spread(groups, brightness, 0)
         await asyncio.sleep(hold_ms / 1000)
-        await self._light_off(targets, fade_out)
+        await self._light_off_spread(groups, fade_out)
         # A flash is a one-shot; wait out its own fade so that a GO landing
         # immediately after does not fight the tail of it.
         await asyncio.sleep(fade_out)
@@ -573,9 +628,10 @@ class EffectEngine:
         brightness = _as_int(params, "brightness_pct", 100, 1, 100)
         period_ms = _as_int(params, "period_ms", 200, MIN_STEP_MS * 2, 4000)
         half = period_ms / 2000
+        groups = self._spread(targets, colors)
 
         while True:
-            await self._light_on(targets, colors[0], brightness, 0)
+            await self._light_on_spread(groups, brightness, 0)
             await asyncio.sleep(half)
-            await self._light_off(targets, 0)
+            await self._light_off_spread(groups, 0)
             await asyncio.sleep(half)

@@ -214,6 +214,19 @@ class Cue:
         )
 
 
+def _rgb_list(raw: Any) -> list[list[int]]:
+    """Keep only well-formed [r, g, b] triples, clamped to 0-255."""
+    if not isinstance(raw, list):
+        return []
+    return [
+        [max(0, min(255, int(c))) for c in rgb]
+        for rgb in raw
+        if isinstance(rgb, list)
+        and len(rgb) == 3
+        and all(isinstance(c, (int, float)) for c in rgb)
+    ]
+
+
 @dataclass
 class Show:
     """One production, and its cue list."""
@@ -224,9 +237,12 @@ class Show:
     cues: list[Cue] = field(default_factory=list)
     created: str = ""
     modified: str = ""
+    colors: list[list[int]] = field(default_factory=list)
+    """Saved swatches, RGB. Written only when non-empty so a show recorded
+    before this key existed round-trips byte-for-byte."""
 
     def to_dict(self) -> dict[str, Any]:
-        return {
+        out: dict[str, Any] = {
             "id": self.id,
             "name": self.name,
             "cue_prefix": self.cue_prefix,
@@ -234,6 +250,9 @@ class Show:
             "created": self.created,
             "modified": self.modified,
         }
+        if self.colors:
+            out["colors"] = [list(rgb) for rgb in self.colors]
+        return out
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> Show | None:
@@ -253,6 +272,7 @@ class Show:
             cues=cues,
             created=str(data.get("created") or ""),
             modified=str(data.get("modified") or ""),
+            colors=_rgb_list(data.get("colors")),
         )
 
     # ------------------------------------------------------------------
@@ -414,7 +434,11 @@ class ShowStore:
         return show
 
     async def async_rename_show(
-        self, show_id: str, name: str | None, cue_prefix: str | None = None
+        self,
+        show_id: str,
+        name: str | None,
+        cue_prefix: str | None = None,
+        colors: list[list[int]] | None = None,
     ) -> Show | None:
         show = self.show(show_id)
         if show is None:
@@ -423,6 +447,8 @@ class ShowStore:
             show.name = name.strip()
         if cue_prefix is not None and cue_prefix.strip():
             show.cue_prefix = cue_prefix.strip()
+        if colors is not None:
+            show.colors = _rgb_list(colors)
         show.modified = dt_util.utcnow().isoformat()
         await self.async_save()
         return show
@@ -568,6 +594,19 @@ class ShowStore:
         show.modified = now
         await self.async_save()
         return cue
+
+    async def async_duplicate_cue(self, show_id: str, cue_id: str) -> Cue | None:
+        """Copy a cue in place: same levels and parameters, new id, next in the list."""
+        show = self.show(show_id)
+        if show is None or (index := show.index_of(cue_id)) is None:
+            return None
+        source = show.cues[index]
+        copy = Cue.from_dict(source.to_dict())
+        assert copy is not None  # round-trip of a valid cue always succeeds
+        copy.id = random_uuid_hex()
+        copy.label = f"{source.label} copy"
+        copy.created = ""
+        return await self.async_add_cue(show_id, copy, at=index + 1)
 
     async def async_delete_cue(self, show_id: str, cue_id: str) -> bool:
         show = self.show(show_id)

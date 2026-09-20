@@ -184,6 +184,20 @@ def hue_light_id_for_entity(
     return None
 
 
+def is_group_light(hass: HomeAssistant, entity_id: str) -> bool:
+    """A Hue room/zone or a Home Assistant light group, never a lamp.
+
+    A group in the rig is a broadcast that lands after every lamp's own call
+    and repaints the whole stage with one averaged colour — that was *Carrie*
+    on 2026-09-20. Kept out of the candidate list and skipped at playback.
+    """
+    state = hass.states.get(entity_id)
+    if state is not None and state.attributes.get("is_hue_group"):
+        return True
+    entry = er.async_get(hass).async_get(entity_id)
+    return entry is not None and entry.platform == "group"
+
+
 def classify(
     hass: HomeAssistant,
     entity_id: str,

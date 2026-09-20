@@ -127,6 +127,11 @@ Open the **Rig** tab, press **Add lights**, and pick your fixtures. Anything
 Home Assistant can turn on can be in the rig — Hue colour bulbs, Hue whites,
 third-party Zigbee bulbs, a practical lamp on a smart plug.
 
+Hue rooms and zones, and Home Assistant light groups, are never offered and
+are never rig members. A group is one broadcast that lands after every lamp's
+own command and repaints the whole stage in one averaged colour, so a look
+recorded with a group in the rig plays back wrong. Add each lamp individually.
+
 ![The Rig tab, listing six fixtures with their entity IDs](docs/images/rig.png)
 
 The order matters: it is the order a chase walks the rig in. Reorder it so it
@@ -156,6 +161,9 @@ give it 0 and it snaps.
 Inserting a cue between LX3 and LX4 gives you **LX3.5** rather than
 renumbering the rest of the show — the same thing a paper cue sheet does, and
 for the same reason.
+
+**Duplicate** in a cue's editor copies it — levels, effect and fade —
+straight after it as "LX3 copy", for building variations of a look.
 
 Already have your looks as Hue scenes? **Import from Hue** turns any Hue room
 or zone into a show, one cue per scene, in proper cue-number order. The scenes
@@ -192,6 +200,13 @@ list, and it fires from GO like any other.
 The lights you pick, *in the order you pick them*, are the order a chase walks
 — so a chase can sweep down one side of the stage and back up the other. Leave
 it empty and it uses the whole rig, in rig order.
+
+Colours are per light — give a chase, flash or strobe one colour per lamp and
+each lamp takes its own, cycling if there are fewer colours than lamps. One
+colour lights everything in that colour. **★ save** next to a colour keeps it
+on the show as a swatch, and a swatch fills the last colour slot so "+" then a
+swatch builds a colour list without re-picking. Chase has a fade-in as well as
+a fade-out.
 
 An effect runs until the next cue or until **Stop**. Firing any cue stops a
 running effect first, so a blackout is really a blackout.

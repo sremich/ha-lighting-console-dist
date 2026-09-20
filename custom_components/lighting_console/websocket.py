@@ -44,6 +44,7 @@ WS_TYPE_CUE_RECORD = f"{DOMAIN}/cues/record"
 WS_TYPE_CUE_RERECORD = f"{DOMAIN}/cues/rerecord"
 WS_TYPE_CUE_ADD_EFFECT = f"{DOMAIN}/cues/add_effect"
 WS_TYPE_CUE_UPDATE = f"{DOMAIN}/cues/update"
+WS_TYPE_CUE_DUPLICATE = f"{DOMAIN}/cues/duplicate"
 WS_TYPE_CUE_DELETE = f"{DOMAIN}/cues/delete"
 WS_TYPE_CUE_REORDER = f"{DOMAIN}/cues/reorder"
 
@@ -90,6 +91,7 @@ def async_register_commands(hass: HomeAssistant) -> None:
         websocket_cue_rerecord,
         websocket_cue_add_effect,
         websocket_cue_update,
+        websocket_cue_duplicate,
         websocket_cue_delete,
         websocket_cue_reorder,
         websocket_playback_go,
@@ -314,6 +316,7 @@ async def websocket_show_create(
         vol.Required("show_id"): str,
         vol.Optional("name"): str,
         vol.Optional("cue_prefix"): str,
+        vol.Optional("colors"): [[int]],
     }
 )
 @websocket_api.async_response
@@ -325,7 +328,7 @@ async def websocket_show_rename(
     if (console := _require_console(hass, connection, msg)) is None:
         return
     show = await console.shows.async_rename_show(
-        msg["show_id"], msg.get("name"), msg.get("cue_prefix")
+        msg["show_id"], msg.get("name"), msg.get("cue_prefix"), msg.get("colors")
     )
     if show is None:
         connection.send_error(msg["id"], ERR_NOT_FOUND, "No such show.")
@@ -520,6 +523,28 @@ async def websocket_cue_update(
         connection.send_error(msg["id"], ERR_NO_SHOW, "No active show.")
         return
     cue = await console.shows.async_update_cue(show.id, msg["cue_id"], msg["changes"])
+    if cue is None:
+        connection.send_error(msg["id"], ERR_NOT_FOUND, "No such cue.")
+        return
+    connection.send_result(msg["id"], {"cue": cue.to_dict(), **console.show_summary()})
+
+
+@websocket_api.websocket_command(
+    {vol.Required("type"): WS_TYPE_CUE_DUPLICATE, vol.Required("cue_id"): str}
+)
+@websocket_api.async_response
+async def websocket_cue_duplicate(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    if (console := _require_console(hass, connection, msg)) is None:
+        return
+    show = console.shows.active_show
+    if show is None:
+        connection.send_error(msg["id"], ERR_NO_SHOW, "No active show.")
+        return
+    cue = await console.shows.async_duplicate_cue(show.id, msg["cue_id"])
     if cue is None:
         connection.send_error(msg["id"], ERR_NOT_FOUND, "No such cue.")
         return
