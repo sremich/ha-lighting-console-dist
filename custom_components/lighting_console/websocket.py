@@ -22,6 +22,7 @@ from .console import Console
 from .const import BUILD_GIT_SHA, BUILD_VERSION, DOMAIN
 from .cues import Cue, CueKind
 from .effects import EFFECTS, describe_effects
+from .hue import HueError
 from .playback import resolve_targets
 
 WS_TYPE_INFO = f"{DOMAIN}/info"
@@ -33,6 +34,7 @@ WS_TYPE_RIG_CANDIDATES = f"{DOMAIN}/rig/candidates"
 WS_TYPE_BRIDGE_STATUS = f"{DOMAIN}/bridge/status"
 WS_TYPE_BRIDGE_REFRESH = f"{DOMAIN}/bridge/refresh"
 WS_TYPE_BRIDGE_SCENES_PURGE = f"{DOMAIN}/bridge/scenes/purge"
+WS_TYPE_BRIDGE_SCENES_DELETE_GROUP = f"{DOMAIN}/bridge/scenes/delete_group"
 
 WS_TYPE_SHOW_LIST = f"{DOMAIN}/shows/list"
 WS_TYPE_SHOW_CREATE = f"{DOMAIN}/shows/create"
@@ -68,6 +70,8 @@ ERR_NOT_FOUND = "not_found"
 ERR_UNKNOWN_EFFECT = "unknown_effect"
 ERR_NO_BRIDGE = "no_bridge"
 ERR_NOTHING_TO_IMPORT = "nothing_to_import"
+ERR_NOT_IMPORTED = "not_imported"
+ERR_BRIDGE = "bridge_error"
 
 
 @callback
@@ -83,6 +87,7 @@ def async_register_commands(hass: HomeAssistant) -> None:
         websocket_bridge_status,
         websocket_bridge_refresh,
         websocket_bridge_scenes_purge,
+        websocket_bridge_scenes_delete_group,
         websocket_show_list,
         websocket_show_create,
         websocket_show_rename,
@@ -282,6 +287,32 @@ async def websocket_bridge_scenes_purge(
         return
     removed = await console.async_purge_scenes()
     connection.send_result(msg["id"], {"removed": removed, **console.bridge_status()})
+
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): WS_TYPE_BRIDGE_SCENES_DELETE_GROUP,
+        vol.Required("group_id"): str,
+    }
+)
+@websocket_api.async_response
+async def websocket_bridge_scenes_delete_group(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Delete an imported room or zone's own scenes from the bridge."""
+    if (console := _require_console(hass, connection, msg)) is None:
+        return
+    try:
+        removed = await console.async_delete_group_scenes(msg["group_id"])
+    except LookupError as err:
+        connection.send_error(msg["id"], ERR_NOT_IMPORTED, str(err))
+        return
+    except HueError as err:
+        connection.send_error(msg["id"], ERR_BRIDGE, str(err))
+        return
+    connection.send_result(msg["id"], {"removed": removed})
 
 
 # ----------------------------------------------------------------------

@@ -18,6 +18,8 @@ from typing import Any
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.storage import Store
+from homeassistant.util import dt as dt_util
 from homeassistant.util.uuid import random_uuid_hex
 
 from .const import (
@@ -28,6 +30,9 @@ from .const import (
     CONF_CLIENT_KEY,
     CONF_MAX_FRAMES_IN_FLIGHT,
     DEFAULT_MAX_FRAMES_IN_FLIGHT,
+    DOMAIN,
+    STORAGE_KEY_DELETED_SCENES,
+    STORAGE_VERSION,
 )
 from .cues import Cue, CueKind, LightLevel, ShowStore
 from .effects import EffectEngine
@@ -461,6 +466,7 @@ class Console:
             if scene.actions:
                 usable[scene.group_id] = usable.get(scene.group_id, 0) + 1
 
+        imported = {show.imported_from for show in self.shows.shows}
         listing = []
         for group in groups:
             total = counts.get(group.id, 0)
@@ -492,6 +498,7 @@ class Console:
                     "scene_count": total,
                     "usable_scene_count": live,
                     "importable": live > 0,
+                    "imported": group.id in imported,
                     "reason": reason,
                 }
             )
@@ -536,5 +543,56 @@ class Console:
             return None, result
 
         show = await self.shows.async_create_show(name or group.name)
+        show.imported_from = group.id
         await self.shows.async_add_cues(show.id, result.cues)
         return show.id, result
+
+    async def async_delete_group_scenes(self, group_id: str) -> int:
+        """Delete a Hue room or zone's own scenes from the bridge.
+
+        Refused unless a show was imported from that group — the import is
+        the backup, and this must never run without one. The raw scene
+        resources are written to `lighting_console.deleted_scenes` before
+        anything is deleted, for a human with a JSON viewer; the console
+        never reads them. Only that group's scenes go, and never the
+        console's own `LC` ones. A bridge error mid-way stops and says how
+        many were removed.
+        """
+        if not any(show.imported_from == group_id for show in self.shows.shows):
+            raise LookupError("Import that room or zone into a show first.")
+        if self._client is None:
+            raise HueError("No Hue bridge is paired.")
+        groups, scenes = await self._fetch_groups_and_scenes()
+        group = next((g for g in groups if g.id == group_id), None)
+        if group is None:
+            raise LookupError("That room or zone is no longer on the bridge.")
+        doomed = [
+            s
+            for s in scenes
+            if s.group_id == group_id and not s.name.startswith(SCENE_PREFIX)
+        ]
+        store: Store[dict[str, Any]] = Store(
+            self._hass, STORAGE_VERSION, f"{DOMAIN}.{STORAGE_KEY_DELETED_SCENES}"
+        )
+        kept = await store.async_load() or {"deletions": []}
+        kept["deletions"].append(
+            {
+                "deleted_at": dt_util.utcnow().isoformat(),
+                "group": {"id": group.id, "name": group.name},
+                "scenes": [s.raw for s in doomed],
+            }
+        )
+        await store.async_save(kept)
+        removed = 0
+        try:
+            for scene in doomed:
+                await self._client.async_delete_scene(scene.id)
+                removed += 1
+        except HueError as err:
+            raise HueError(
+                f"Removed {removed} of {len(doomed)} scenes, then the bridge "
+                f"answered: {err}"
+            ) from err
+        # Headroom just opened up; a show that hit the cap can compile now.
+        self.schedule_compile()
+        return removed

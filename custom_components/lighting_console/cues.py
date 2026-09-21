@@ -251,6 +251,10 @@ class Show:
     colors: list[list[int]] = field(default_factory=list)
     """Saved swatches, RGB. Written only when non-empty so a show recorded
     before this key existed round-trips byte-for-byte."""
+    imported_from: str | None = None
+    """The Hue room or zone this show was imported from. It is what lets the
+    console delete that group's scenes from the bridge: the import is the
+    backup. Written only when set."""
 
     def to_dict(self) -> dict[str, Any]:
         out: dict[str, Any] = {
@@ -263,6 +267,8 @@ class Show:
         }
         if self.colors:
             out["colors"] = [list(rgb) for rgb in self.colors]
+        if self.imported_from:
+            out["imported_from"] = self.imported_from
         return out
 
     @classmethod
@@ -284,6 +290,7 @@ class Show:
             created=str(data.get("created") or ""),
             modified=str(data.get("modified") or ""),
             colors=_rgb_list(data.get("colors")),
+            imported_from=str(data.get("imported_from") or "") or None,
         )
 
     # ------------------------------------------------------------------

@@ -39,9 +39,13 @@ def _natural_key(name: str) -> list[Any]:
     Cue lists are full of numbers, and plain lexicographic order puts LX10
     immediately after LX1 — which turns an imported show into nonsense that
     the operator then has to drag back into shape by hand.
+
+    Each part is tagged so a number never meets text in a comparison: a room
+    holding "1. Preset" and "Relax" would otherwise crash the import.
+    Numbered names sort before unnumbered ones.
     """
     return [
-        int(part) if part.isdigit() else part.lower()
+        (0, int(part)) if part.isdigit() else (1, part.lower())
         for part in _NATURAL.split(name.strip())
         if part != ""
     ]

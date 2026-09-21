@@ -13,8 +13,8 @@ NAME: Final = "Lighting Console"
 # from the VERSION file and the git SHA; the values committed here are the
 # development placeholders. The version lives ONLY in VERSION — never edit
 # BUILD_VERSION by hand.
-BUILD_VERSION: Final = "0.5.0"
-BUILD_GIT_SHA: Final = "4bda023d226d"
+BUILD_VERSION: Final = "0.6.0"
+BUILD_GIT_SHA: Final = "e0d3a8415a4d"
 
 # Where the card is published so the frontend can always fetch it.
 #
@@ -60,6 +60,10 @@ STORAGE_KEY_RIG: Final = "rig"
 # little once struck, while a cue list is the artefact of a whole production
 # and must survive everything.
 STORAGE_KEY_SHOWS: Final = "shows"
+
+# Raw copies of the Hue-app scenes the console deleted from the bridge on the
+# operator's behalf. Never read by the console; for a human with a JSON viewer.
+STORAGE_KEY_DELETED_SCENES: Final = "deleted_scenes"
 
 # Config-entry keys for bridge credentials. These are written to Home
 # Assistant's own storage and must never be logged, exported, or sent to the

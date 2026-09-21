@@ -56,7 +56,8 @@ only its own zone and scenes, nothing else; earlier versions only read lights
 and rooms and sent ordinary light commands. The bridge allows 200 scenes
 total, shared with scenes in the Hue app, so a bridge already carrying many
 app scenes may not have room for every look. If the limit is hit, that look
-falls back to per-light and the card shows a warning.
+falls back to per-light and the card shows a warning. The console can delete
+an imported room's Hue-app scenes for you to free up space — see Running a show.
 
 While a stream is active the bridge ignores REST commands for the lights in
 that area, so handoff between the two is explicit and driven by cue content —
@@ -194,6 +195,17 @@ Already have your looks as Hue scenes? **Import from Hue** turns any Hue room
 or zone into a show, one cue per scene, in proper cue-number order. The scenes
 are copied into real cues, so you can edit them here and tidy up the Hue app
 afterwards without losing anything.
+
+If a Hue room or zone has already been imported into a show, a second button
+appears: **Delete its N scenes from the bridge**. The Hue bridge allows 200
+scenes total, shared with the Hue app's own, and old shows left in the Hue app
+eat the headroom, so the console can delete them for you instead of one at a
+time in the Hue app. Before anything is deleted, the raw scenes
+are written to Home Assistant's storage file `config/.storage/lighting_console.deleted_scenes`
+as a backup for a human with a JSON viewer, never read by the console. Only
+that room's scenes are deleted; the imported show is the restore — its looks
+compile back to the bridge as the console's own scenes when the show is active.
+A room or zone not yet imported shows no button, and the delete command refuses.
 
 ### 3. Run it
 
