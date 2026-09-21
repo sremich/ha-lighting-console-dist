@@ -51,12 +51,12 @@ Two very different APIs, used deliberately:
 Static looks now compile to Hue bridge scenes in a dedicated zone called
 "Lighting Console". GO on a look sends one scene recall request to the bridge,
 moving every lamp at once with the cue's fade, instead of ~10 single-light
-REST commands a second. This is the first release that writes anything to
-the bridge itself — earlier versions only read lights and rooms and sent
-ordinary light commands. The bridge allows 200 scenes total, shared with
-scenes in the Hue app, so a bridge already carrying many app scenes may not
-have room for every look. If the limit is hit, that look falls back to
-per-light and the card shows a warning.
+REST commands a second. Since 0.4.0 the console writes to the bridge itself —
+only its own zone and scenes, nothing else; earlier versions only read lights
+and rooms and sent ordinary light commands. The bridge allows 200 scenes
+total, shared with scenes in the Hue app, so a bridge already carrying many
+app scenes may not have room for every look. If the limit is hit, that look
+falls back to per-light and the card shows a warning.
 
 While a stream is active the bridge ignores REST commands for the lights in
 that area, so handoff between the two is explicit and driven by cue content —
@@ -114,14 +114,21 @@ Give it a dashboard of its own if you can. The card is tall, it is the thing
 you will be looking at during a show, and a dashboard called *Console* is one
 tap away on a phone or a tablet at the back of the room.
 
+On a touch screen the card gives GO, Back and Release bigger, more widely
+spaced buttons and fingertip-sized controls automatically; laptops keep the
+denser layout.
+
 **If the card ever says "Configuration error" or "Custom element doesn't
 exist",** reload the page. The console is built so that this does not happen
 on a restart, an update or a first install, and the release harness measures
 exactly that — the one exception is updating from 0.2.0 or earlier, which
 still has the window on that single upgrade boot; reload once and it is gone
-for good. If it happens anywhere else, and reloading fixes it, please report
-it with the Home Assistant version and roughly when after a restart the page
-was opened — it is a bug, not something to live with.
+for good. 0.5.0 fixed a second cause — a cold browser cache (first visit, new
+browser, cache cleared) could show "Configuration error" until a reload; if
+you are on 0.4.0 or earlier and see it on a first visit, update. If it
+happens on 0.5.0 or later, and reloading fixes it, please report it with the
+Home Assistant version and roughly when after a restart the page was opened —
+it is a bug, not something to live with.
 
 ## Running a show
 
@@ -147,8 +154,9 @@ holding the rig's Hue lights — leave it alone in the Hue app.
 
 ![The Rig tab, listing six fixtures with their entity IDs](docs/images/rig.png)
 
-The order matters: it is the order a chase walks the rig in. Reorder it so it
-matches the stage, left to right.
+The order matters: it is the order a chase walks the rig in. The Rig tab has
+↑ ↓ on each light to change rig order. Reorder it so it matches the stage,
+left to right.
 
 ### 2. Make a show and record some cues
 
@@ -178,6 +186,10 @@ for the same reason.
 **Duplicate** in a cue's editor copies it — levels, effect and fade —
 straight after it as "LX3 copy", for building variations of a look.
 
+**Snapshot**, a button beside **New show**, copies the active show, cues and
+all, as an inactive show named with the date and time. Press it before deleting
+anything, because Delete has no undo.
+
 Already have your looks as Hue scenes? **Import from Hue** turns any Hue room
 or zone into a show, one cue per scene, in proper cue-number order. The scenes
 are copied into real cues, so you can edit them here and tidy up the Hue app
@@ -206,7 +218,7 @@ them and the cue is falling back to per-light instead.
 
 ### 4. Effect cues
 
-**+ Effect cue** adds a cue that moves: a chase, a flash, or a strobe.
+**+ Effect cue** adds a cue that moves: a chase, a flash, a strobe, or a sequence.
 
 ![The effect cue editor, with Chase selected and its parameters](docs/images/effect-cue.png)
 
@@ -225,6 +237,15 @@ colour lights everything in that colour. **★ save** next to a colour keeps it
 on the show as a swatch, and a swatch fills the last colour slot so "+" then a
 swatch builds a colour list without re-picking. Chase has a fade-in as well as
 a fade-out.
+
+**Sequence** is your own steps, in order. Each step names its lights, one
+colour, a hold time, a fade in and a fade out. When a step starts, the
+previous step's lights go out (unless the new step lights them too). One
+brightness for the whole effect. Loop on (default) repeats, Loop off ends dark
+after the last step. Use it for police lights, a two-colour alternation, a
+custom chase a plain chase cannot spell. The card's step editor has "+ Add a
+step" and a − per row; it reuses the lights and number editors, with a single
+colour picker per step.
 
 An effect runs until the next cue or until **Stop**. Firing any cue stops a
 running effect first, so a blackout is really a blackout.

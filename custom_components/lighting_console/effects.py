@@ -59,7 +59,7 @@ class EffectParam:
     key: str
     label: str
     type: str
-    """`number`, `color`, `entities`, `select` or `boolean`."""
+    """`number`, `color`, `entities`, `select`, `boolean` or `steps`."""
 
     default: Any = None
     minimum: float | None = None
@@ -248,7 +248,80 @@ EFFECTS: dict[str, EffectDefinition] = {
             ),
         ],
     ),
+    "sequence": EffectDefinition(
+        name="sequence",
+        label="Sequence",
+        description=(
+            "Your own steps, in order: each lights its lamps in one colour, "
+            "holds, and the previous step's lamps go out. Police lights, a "
+            "custom chase, anything a chase cannot spell."
+        ),
+        params=[
+            _BRIGHTNESS,
+            EffectParam(
+                key="loop",
+                label="Loop",
+                type="boolean",
+                default=True,
+                help="Off: run the steps once and stop.",
+            ),
+            EffectParam(
+                key="steps",
+                label="Steps",
+                type="steps",
+                default=[
+                    {
+                        "targets": [],
+                        "color": [255, 0, 0],
+                        "hold_ms": 500,
+                        "fade_in": 0.0,
+                        "fade_out": 0.0,
+                    },
+                    {
+                        "targets": [],
+                        "color": [0, 0, 255],
+                        "hold_ms": 500,
+                        "fade_in": 0.0,
+                        "fade_out": 0.0,
+                    },
+                ],
+                help="Each step: which lights, one colour, how long to hold, "
+                "and how fast they rise and fall. Empty lights means the whole rig.",
+            ),
+        ],
+    ),
 }
+
+#: One normalised sequence step: (targets, rgb, hold seconds, fade in, fade out).
+_Step = tuple[list[str], list[int], float, float, float]
+
+
+def _steps(params: dict[str, Any], targets: list[str]) -> list[_Step]:
+    """Normalise the step list; a step's empty or unknown lights mean all of
+    `targets`. Malformed steps are dropped; no usable step means the default."""
+    raw = params.get("steps")
+    if not isinstance(raw, list):
+        raw = EFFECTS["sequence"].defaults()["steps"]
+    in_rig = set(targets)
+    steps: list[_Step] = []
+    for item in raw:
+        if not isinstance(item, dict):
+            continue
+        chosen = [
+            e for e in item.get("targets") or [] if isinstance(e, str) and e in in_rig
+        ]
+        steps.append(
+            (
+                chosen or list(targets),
+                _colors({"colors": [item.get("color")]}, [[255, 255, 255]])[0],
+                _as_int(item, "hold_ms", 500, MIN_STEP_MS, 60_000) / 1000,
+                _as_float(item, "fade_in", 0.0, 0.0, 10.0),
+                _as_float(item, "fade_out", 0.0, 0.0, 10.0),
+            )
+        )
+    if not steps:
+        return _steps({"steps": None}, targets)
+    return steps
 
 
 def describe_effects() -> list[dict[str, Any]]:
@@ -444,6 +517,8 @@ class EffectEngine:
                 await self._run_flash(params, targets)
             elif name == "strobe":
                 await self._run_strobe(params, targets)
+            elif name == "sequence":
+                await self._run_sequence(params, targets)
         except asyncio.CancelledError:
             raise
         except Exception:
@@ -622,6 +697,37 @@ class EffectEngine:
         # A flash is a one-shot; wait out its own fade so that a GO landing
         # immediately after does not fight the tail of it.
         await asyncio.sleep(fade_out)
+
+    async def _run_sequence(self, params: dict[str, Any], targets: list[str]) -> None:
+        brightness = _as_int(params, "brightness_pct", 100, 1, 100)
+        loop = params.get("loop", True) is not False
+        steps = _steps(params, targets)
+
+        previous: _Step | None = None
+        while True:
+            for step in steps:
+                lights, color, hold, fade_in, _ = step
+                if previous is not None:
+                    # Lamps that carry over into this step are not switched off
+                    # in between — that would flicker them.
+                    gone = [e for e in previous[0] if e not in lights]
+                    if gone:
+                        await self._light_off_spread(
+                            self._spread(gone, [previous[1]]), previous[4]
+                        )
+                await self._light_on_spread(
+                    self._spread(lights, [color]), brightness, fade_in
+                )
+                await asyncio.sleep(hold)
+                previous = step
+            if not loop:
+                break
+        # A one-shot ends dark, and waits out its own fade like a flash does.
+        assert previous is not None
+        await self._light_off_spread(
+            self._spread(previous[0], [previous[1]]), previous[4]
+        )
+        await asyncio.sleep(previous[4])
 
     async def _run_strobe(self, params: dict[str, Any], targets: list[str]) -> None:
         colors = _colors(params, [[255, 255, 255]])

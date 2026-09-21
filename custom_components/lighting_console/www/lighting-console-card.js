@@ -1,8 +1,8 @@
-var Ct=Object.defineProperty;var Rt=Object.getOwnPropertyDescriptor;var u=(s,e,t,r)=>{for(var i=r>1?void 0:r?Rt(e,t):e,n=s.length-1,o;n>=0;n--)(o=s[n])&&(i=(r?o(e,t,i):o(i))||i);return r&&i&&Ct(e,t,i),i};var L=globalThis,j=L.ShadowRoot&&(L.ShadyCSS===void 0||L.ShadyCSS.nativeShadow)&&"adoptedStyleSheets"in Document.prototype&&"replace"in CSSStyleSheet.prototype,K=Symbol(),at=new WeakMap,T=class{constructor(e,t,r){if(this._$cssResult$=!0,r!==K)throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");this.cssText=e,this.t=t}get styleSheet(){let e=this.o,t=this.t;if(j&&e===void 0){let r=t!==void 0&&t.length===1;r&&(e=at.get(t)),e===void 0&&((this.o=e=new CSSStyleSheet).replaceSync(this.cssText),r&&at.set(t,e))}return e}toString(){return this.cssText}},lt=s=>new T(typeof s=="string"?s:s+"",void 0,K),P=(s,...e)=>{let t=s.length===1?s[0]:e.reduce((r,i,n)=>r+(o=>{if(o._$cssResult$===!0)return o.cssText;if(typeof o=="number")return o;throw Error("Value passed to 'css' function must be a 'css' function result: "+o+". Use 'unsafeCSS' to pass non-literal values, but take care to ensure page security.")})(i)+s[n+1],s[0]);return new T(t,s,K)},ct=(s,e)=>{if(j)s.adoptedStyleSheets=e.map(t=>t instanceof CSSStyleSheet?t:t.styleSheet);else for(let t of e){let r=document.createElement("style"),i=L.litNonce;i!==void 0&&r.setAttribute("nonce",i),r.textContent=t.cssText,s.appendChild(r)}},J=j?s=>s:s=>s instanceof CSSStyleSheet?(e=>{let t="";for(let r of e.cssRules)t+=r.cssText;return lt(t)})(s):s;var{is:Tt,defineProperty:Pt,getOwnPropertyDescriptor:Nt,getOwnPropertyNames:Ht,getOwnPropertySymbols:Mt,getPrototypeOf:Ot}=Object,G=globalThis,dt=G.trustedTypes,It=dt?dt.emptyScript:"",Ut=G.reactiveElementPolyfillSupport,N=(s,e)=>s,H={toAttribute(s,e){switch(e){case Boolean:s=s?It:null;break;case Object:case Array:s=s==null?s:JSON.stringify(s)}return s},fromAttribute(s,e){let t=s;switch(e){case Boolean:t=s!==null;break;case Number:t=s===null?null:Number(s);break;case Object:case Array:try{t=JSON.parse(s)}catch{t=null}}return t}},q=(s,e)=>!Tt(s,e),ht={attribute:!0,type:String,converter:H,reflect:!1,useDefault:!1,hasChanged:q};Symbol.metadata??=Symbol("metadata"),G.litPropertyMetadata??=new WeakMap;var $=class extends HTMLElement{static addInitializer(e){this._$Ei(),(this.l??=[]).push(e)}static get observedAttributes(){return this.finalize(),this._$Eh&&[...this._$Eh.keys()]}static createProperty(e,t=ht){if(t.state&&(t.attribute=!1),this._$Ei(),this.prototype.hasOwnProperty(e)&&((t=Object.create(t)).wrapped=!0),this.elementProperties.set(e,t),!t.noAccessor){let r=Symbol(),i=this.getPropertyDescriptor(e,r,t);i!==void 0&&Pt(this.prototype,e,i)}}static getPropertyDescriptor(e,t,r){let{get:i,set:n}=Nt(this.prototype,e)??{get(){return this[t]},set(o){this[t]=o}};return{get:i,set(o){let l=i?.call(this);n?.call(this,o),this.requestUpdate(e,l,r)},configurable:!0,enumerable:!0}}static getPropertyOptions(e){return this.elementProperties.get(e)??ht}static _$Ei(){if(this.hasOwnProperty(N("elementProperties")))return;let e=Ot(this);e.finalize(),e.l!==void 0&&(this.l=[...e.l]),this.elementProperties=new Map(e.elementProperties)}static finalize(){if(this.hasOwnProperty(N("finalized")))return;if(this.finalized=!0,this._$Ei(),this.hasOwnProperty(N("properties"))){let t=this.properties,r=[...Ht(t),...Mt(t)];for(let i of r)this.createProperty(i,t[i])}let e=this[Symbol.metadata];if(e!==null){let t=litPropertyMetadata.get(e);if(t!==void 0)for(let[r,i]of t)this.elementProperties.set(r,i)}this._$Eh=new Map;for(let[t,r]of this.elementProperties){let i=this._$Eu(t,r);i!==void 0&&this._$Eh.set(i,t)}this.elementStyles=this.finalizeStyles(this.styles)}static finalizeStyles(e){let t=[];if(Array.isArray(e)){let r=new Set(e.flat(1/0).reverse());for(let i of r)t.unshift(J(i))}else e!==void 0&&t.push(J(e));return t}static _$Eu(e,t){let r=t.attribute;return r===!1?void 0:typeof r=="string"?r:typeof e=="string"?e.toLowerCase():void 0}constructor(){super(),this._$Ep=void 0,this.isUpdatePending=!1,this.hasUpdated=!1,this._$Em=null,this._$Ev()}_$Ev(){this._$ES=new Promise(e=>this.enableUpdating=e),this._$AL=new Map,this._$E_(),this.requestUpdate(),this.constructor.l?.forEach(e=>e(this))}addController(e){(this._$EO??=new Set).add(e),this.renderRoot!==void 0&&this.isConnected&&e.hostConnected?.()}removeController(e){this._$EO?.delete(e)}_$E_(){let e=new Map,t=this.constructor.elementProperties;for(let r of t.keys())this.hasOwnProperty(r)&&(e.set(r,this[r]),delete this[r]);e.size>0&&(this._$Ep=e)}createRenderRoot(){let e=this.shadowRoot??this.attachShadow(this.constructor.shadowRootOptions);return ct(e,this.constructor.elementStyles),e}connectedCallback(){this.renderRoot??=this.createRenderRoot(),this.enableUpdating(!0),this._$EO?.forEach(e=>e.hostConnected?.())}enableUpdating(e){}disconnectedCallback(){this._$EO?.forEach(e=>e.hostDisconnected?.())}attributeChangedCallback(e,t,r){this._$AK(e,r)}_$ET(e,t){let r=this.constructor.elementProperties.get(e),i=this.constructor._$Eu(e,r);if(i!==void 0&&r.reflect===!0){let n=(r.converter?.toAttribute!==void 0?r.converter:H).toAttribute(t,r.type);this._$Em=e,n==null?this.removeAttribute(i):this.setAttribute(i,n),this._$Em=null}}_$AK(e,t){let r=this.constructor,i=r._$Eh.get(e);if(i!==void 0&&this._$Em!==i){let n=r.getPropertyOptions(i),o=typeof n.converter=="function"?{fromAttribute:n.converter}:n.converter?.fromAttribute!==void 0?n.converter:H;this._$Em=i;let l=o.fromAttribute(t,n.type);this[i]=l??this._$Ej?.get(i)??l,this._$Em=null}}requestUpdate(e,t,r,i=!1,n){if(e!==void 0){let o=this.constructor;if(i===!1&&(n=this[e]),r??=o.getPropertyOptions(e),!((r.hasChanged??q)(n,t)||r.useDefault&&r.reflect&&n===this._$Ej?.get(e)&&!this.hasAttribute(o._$Eu(e,r))))return;this.C(e,t,r)}this.isUpdatePending===!1&&(this._$ES=this._$EP())}C(e,t,{useDefault:r,reflect:i,wrapped:n},o){r&&!(this._$Ej??=new Map).has(e)&&(this._$Ej.set(e,o??t??this[e]),n!==!0||o!==void 0)||(this._$AL.has(e)||(this.hasUpdated||r||(t=void 0),this._$AL.set(e,t)),i===!0&&this._$Em!==e&&(this._$Eq??=new Set).add(e))}async _$EP(){this.isUpdatePending=!0;try{await this._$ES}catch(t){Promise.reject(t)}let e=this.scheduleUpdate();return e!=null&&await e,!this.isUpdatePending}scheduleUpdate(){return this.performUpdate()}performUpdate(){if(!this.isUpdatePending)return;if(!this.hasUpdated){if(this.renderRoot??=this.createRenderRoot(),this._$Ep){for(let[i,n]of this._$Ep)this[i]=n;this._$Ep=void 0}let r=this.constructor.elementProperties;if(r.size>0)for(let[i,n]of r){let{wrapped:o}=n,l=this[i];o!==!0||this._$AL.has(i)||l===void 0||this.C(i,void 0,n,l)}}let e=!1,t=this._$AL;try{e=this.shouldUpdate(t),e?(this.willUpdate(t),this._$EO?.forEach(r=>r.hostUpdate?.()),this.update(t)):this._$EM()}catch(r){throw e=!1,this._$EM(),r}e&&this._$AE(t)}willUpdate(e){}_$AE(e){this._$EO?.forEach(t=>t.hostUpdated?.()),this.hasUpdated||(this.hasUpdated=!0,this.firstUpdated(e)),this.updated(e)}_$EM(){this._$AL=new Map,this.isUpdatePending=!1}get updateComplete(){return this.getUpdateComplete()}getUpdateComplete(){return this._$ES}shouldUpdate(e){return!0}update(e){this._$Eq&&=this._$Eq.forEach(t=>this._$ET(t,this[t])),this._$EM()}updated(e){}firstUpdated(e){}};$.elementStyles=[],$.shadowRootOptions={mode:"open"},$[N("elementProperties")]=new Map,$[N("finalized")]=new Map,Ut?.({ReactiveElement:$}),(G.reactiveElementVersions??=[]).push("2.1.2");var rt=globalThis,pt=s=>s,F=rt.trustedTypes,ut=F?F.createPolicy("lit-html",{createHTML:s=>s}):void 0,vt="$lit$",x=`lit$${Math.random().toFixed(9).slice(2)}$`,$t="?"+x,Dt=`<${$t}>`,E=document,O=()=>E.createComment(""),I=s=>s===null||typeof s!="object"&&typeof s!="function",it=Array.isArray,zt=s=>it(s)||typeof s?.[Symbol.iterator]=="function",Y=`[ 	
-\f\r]`,M=/<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g,gt=/-->/g,mt=/>/g,w=RegExp(`>|${Y}(?:([^\\s"'>=/]+)(${Y}*=${Y}*(?:[^ 	
-\f\r"'\`<>=]|("|')|))|$)`,"g"),ft=/'/g,_t=/"/g,yt=/^(?:script|style|textarea|title)$/i,st=s=>(e,...t)=>({_$litType$:s,strings:e,values:t}),a=st(1),Zt=st(2),Qt=st(3),A=Symbol.for("lit-noChange"),d=Symbol.for("lit-nothing"),bt=new WeakMap,S=E.createTreeWalker(E,129);function xt(s,e){if(!it(s)||!s.hasOwnProperty("raw"))throw Error("invalid template strings array");return ut!==void 0?ut.createHTML(e):e}var Bt=(s,e)=>{let t=s.length-1,r=[],i,n=e===2?"<svg>":e===3?"<math>":"",o=M;for(let l=0;l<t;l++){let c=s[l],h,p,g=-1,b=0;for(;b<c.length&&(o.lastIndex=b,p=o.exec(c),p!==null);)b=o.lastIndex,o===M?p[1]==="!--"?o=gt:p[1]!==void 0?o=mt:p[2]!==void 0?(yt.test(p[2])&&(i=RegExp("</"+p[2],"g")),o=w):p[3]!==void 0&&(o=w):o===w?p[0]===">"?(o=i??M,g=-1):p[1]===void 0?g=-2:(g=o.lastIndex-p[2].length,h=p[1],o=p[3]===void 0?w:p[3]==='"'?_t:ft):o===_t||o===ft?o=w:o===gt||o===mt?o=M:(o=w,i=void 0);let y=o===w&&s[l+1].startsWith("/>")?" ":"";n+=o===M?c+Dt:g>=0?(r.push(h),c.slice(0,g)+vt+c.slice(g)+x+y):c+x+(g===-2?l:y)}return[xt(s,n+(s[t]||"<?>")+(e===2?"</svg>":e===3?"</math>":"")),r]},U=class s{constructor({strings:e,_$litType$:t},r){let i;this.parts=[];let n=0,o=0,l=e.length-1,c=this.parts,[h,p]=Bt(e,t);if(this.el=s.createElement(h,r),S.currentNode=this.el.content,t===2||t===3){let g=this.el.content.firstChild;g.replaceWith(...g.childNodes)}for(;(i=S.nextNode())!==null&&c.length<l;){if(i.nodeType===1){if(i.hasAttributes())for(let g of i.getAttributeNames())if(g.endsWith(vt)){let b=p[o++],y=i.getAttribute(g).split(x),B=/([.?@])?(.*)/.exec(b);c.push({type:1,index:n,name:B[2],strings:y,ctor:B[1]==="."?Q:B[1]==="?"?X:B[1]==="@"?tt:C}),i.removeAttribute(g)}else g.startsWith(x)&&(c.push({type:6,index:n}),i.removeAttribute(g));if(yt.test(i.tagName)){let g=i.textContent.split(x),b=g.length-1;if(b>0){i.textContent=F?F.emptyScript:"";for(let y=0;y<b;y++)i.append(g[y],O()),S.nextNode(),c.push({type:2,index:++n});i.append(g[b],O())}}}else if(i.nodeType===8)if(i.data===$t)c.push({type:2,index:n});else{let g=-1;for(;(g=i.data.indexOf(x,g+1))!==-1;)c.push({type:7,index:n}),g+=x.length-1}n++}}static createElement(e,t){let r=E.createElement("template");return r.innerHTML=e,r}};function k(s,e,t=s,r){if(e===A)return e;let i=r!==void 0?t._$Co?.[r]:t._$Cl,n=I(e)?void 0:e._$litDirective$;return i?.constructor!==n&&(i?._$AO?.(!1),n===void 0?i=void 0:(i=new n(s),i._$AT(s,t,r)),r!==void 0?(t._$Co??=[])[r]=i:t._$Cl=i),i!==void 0&&(e=k(s,i._$AS(s,e.values),i,r)),e}var Z=class{constructor(e,t){this._$AV=[],this._$AN=void 0,this._$AD=e,this._$AM=t}get parentNode(){return this._$AM.parentNode}get _$AU(){return this._$AM._$AU}u(e){let{el:{content:t},parts:r}=this._$AD,i=(e?.creationScope??E).importNode(t,!0);S.currentNode=i;let n=S.nextNode(),o=0,l=0,c=r[0];for(;c!==void 0;){if(o===c.index){let h;c.type===2?h=new D(n,n.nextSibling,this,e):c.type===1?h=new c.ctor(n,c.name,c.strings,this,e):c.type===6&&(h=new et(n,this,e)),this._$AV.push(h),c=r[++l]}o!==c?.index&&(n=S.nextNode(),o++)}return S.currentNode=E,i}p(e){let t=0;for(let r of this._$AV)r!==void 0&&(r.strings!==void 0?(r._$AI(e,r,t),t+=r.strings.length-2):r._$AI(e[t])),t++}},D=class s{get _$AU(){return this._$AM?._$AU??this._$Cv}constructor(e,t,r,i){this.type=2,this._$AH=d,this._$AN=void 0,this._$AA=e,this._$AB=t,this._$AM=r,this.options=i,this._$Cv=i?.isConnected??!0}get parentNode(){let e=this._$AA.parentNode,t=this._$AM;return t!==void 0&&e?.nodeType===11&&(e=t.parentNode),e}get startNode(){return this._$AA}get endNode(){return this._$AB}_$AI(e,t=this){e=k(this,e,t),I(e)?e===d||e==null||e===""?(this._$AH!==d&&this._$AR(),this._$AH=d):e!==this._$AH&&e!==A&&this._(e):e._$litType$!==void 0?this.$(e):e.nodeType!==void 0?this.T(e):zt(e)?this.k(e):this._(e)}O(e){return this._$AA.parentNode.insertBefore(e,this._$AB)}T(e){this._$AH!==e&&(this._$AR(),this._$AH=this.O(e))}_(e){this._$AH!==d&&I(this._$AH)?this._$AA.nextSibling.data=e:this.T(E.createTextNode(e)),this._$AH=e}$(e){let{values:t,_$litType$:r}=e,i=typeof r=="number"?this._$AC(e):(r.el===void 0&&(r.el=U.createElement(xt(r.h,r.h[0]),this.options)),r);if(this._$AH?._$AD===i)this._$AH.p(t);else{let n=new Z(i,this),o=n.u(this.options);n.p(t),this.T(o),this._$AH=n}}_$AC(e){let t=bt.get(e.strings);return t===void 0&&bt.set(e.strings,t=new U(e)),t}k(e){it(this._$AH)||(this._$AH=[],this._$AR());let t=this._$AH,r,i=0;for(let n of e)i===t.length?t.push(r=new s(this.O(O()),this.O(O()),this,this.options)):r=t[i],r._$AI(n),i++;i<t.length&&(this._$AR(r&&r._$AB.nextSibling,i),t.length=i)}_$AR(e=this._$AA.nextSibling,t){for(this._$AP?.(!1,!0,t);e!==this._$AB;){let r=pt(e).nextSibling;pt(e).remove(),e=r}}setConnected(e){this._$AM===void 0&&(this._$Cv=e,this._$AP?.(e))}},C=class{get tagName(){return this.element.tagName}get _$AU(){return this._$AM._$AU}constructor(e,t,r,i,n){this.type=1,this._$AH=d,this._$AN=void 0,this.element=e,this.name=t,this._$AM=i,this.options=n,r.length>2||r[0]!==""||r[1]!==""?(this._$AH=Array(r.length-1).fill(new String),this.strings=r):this._$AH=d}_$AI(e,t=this,r,i){let n=this.strings,o=!1;if(n===void 0)e=k(this,e,t,0),o=!I(e)||e!==this._$AH&&e!==A,o&&(this._$AH=e);else{let l=e,c,h;for(e=n[0],c=0;c<n.length-1;c++)h=k(this,l[r+c],t,c),h===A&&(h=this._$AH[c]),o||=!I(h)||h!==this._$AH[c],h===d?e=d:e!==d&&(e+=(h??"")+n[c+1]),this._$AH[c]=h}o&&!i&&this.j(e)}j(e){e===d?this.element.removeAttribute(this.name):this.element.setAttribute(this.name,e??"")}},Q=class extends C{constructor(){super(...arguments),this.type=3}j(e){this.element[this.name]=e===d?void 0:e}},X=class extends C{constructor(){super(...arguments),this.type=4}j(e){this.element.toggleAttribute(this.name,!!e&&e!==d)}},tt=class extends C{constructor(e,t,r,i,n){super(e,t,r,i,n),this.type=5}_$AI(e,t=this){if((e=k(this,e,t,0)??d)===A)return;let r=this._$AH,i=e===d&&r!==d||e.capture!==r.capture||e.once!==r.once||e.passive!==r.passive,n=e!==d&&(r===d||i);i&&this.element.removeEventListener(this.name,this,r),n&&this.element.addEventListener(this.name,this,e),this._$AH=e}handleEvent(e){typeof this._$AH=="function"?this._$AH.call(this.options?.host??this.element,e):this._$AH.handleEvent(e)}},et=class{constructor(e,t,r){this.element=e,this.type=6,this._$AN=void 0,this._$AM=t,this.options=r}get _$AU(){return this._$AM._$AU}_$AI(e){k(this,e)}};var Lt=rt.litHtmlPolyfillSupport;Lt?.(U,D),(rt.litHtmlVersions??=[]).push("3.3.3");var wt=(s,e,t)=>{let r=t?.renderBefore??e,i=r._$litPart$;if(i===void 0){let n=t?.renderBefore??null;r._$litPart$=i=new D(e.insertBefore(O(),n),n,void 0,t??{})}return i._$AI(s),i};var nt=globalThis,v=class extends ${constructor(){super(...arguments),this.renderOptions={host:this},this._$Do=void 0}createRenderRoot(){let e=super.createRenderRoot();return this.renderOptions.renderBefore??=e.firstChild,e}update(e){let t=this.render();this.hasUpdated||(this.renderOptions.isConnected=this.isConnected),super.update(e),this._$Do=wt(t,this.renderRoot,this.renderOptions)}connectedCallback(){super.connectedCallback(),this._$Do?.setConnected(!0)}disconnectedCallback(){super.disconnectedCallback(),this._$Do?.setConnected(!1)}render(){return A}};v._$litElement$=!0,v.finalized=!0,nt.litElementHydrateSupport?.({LitElement:v});var jt=nt.litElementPolyfillSupport;jt?.({LitElement:v});(nt.litElementVersions??=[]).push("4.2.2");var Gt={attribute:!0,type:String,converter:H,reflect:!1,hasChanged:q},qt=(s=Gt,e,t)=>{let{kind:r,metadata:i}=t,n=globalThis.litPropertyMetadata.get(i);if(n===void 0&&globalThis.litPropertyMetadata.set(i,n=new Map),r==="setter"&&((s=Object.create(s)).wrapped=!0),n.set(t.name,s),r==="accessor"){let{name:o}=t;return{set(l){let c=e.get.call(this);e.set.call(this,l),this.requestUpdate(o,c,s,!0,l)},init(l){return l!==void 0&&this.C(o,void 0,s,l),l}}}if(r==="setter"){let{name:o}=t;return function(l){let c=this[o];e.call(this,l),this.requestUpdate(o,c,s,!0,l)}}throw Error("Unsupported decorator location: "+r)};function R(s){return(e,t)=>typeof t=="object"?qt(s,e,t):((r,i,n)=>{let o=i.hasOwnProperty(n);return i.constructor.createProperty(n,r),o?Object.getOwnPropertyDescriptor(i,n):void 0})(s,e,t)}function m(s){return R({...s,state:!0,attribute:!1})}function V(s,e){customElements.get(s)||customElements.define(s,e)}function St(s){window.customCards=window.customCards??[],window.customCards.some(e=>e.type===s.type)||window.customCards.push(s)}var Et={unavailable:{label:"Unavailable",tone:"bad"},hue_color_no_area:{label:"Not in an area",tone:"warn"},streamable:{label:"Effects",tone:"good"},rest_only:{label:"Home Assistant",tone:"neutral"}},At=[0,.5,1,2,3,5,10,20,30];function ot(s){return s<=0?"snap":s<1?`${s}s`:`${Number.isInteger(s)?s:s.toFixed(1)}s`}var f=class extends v{constructor(){super(...arguments);this._effects=[];this._busy=!1;this._creatingShow=!1;this._newShowName="";this._importing=!1;this._addingEffect=!1;this._draftParams={};this._createShow=()=>{let t=this._newShowName.trim();t&&(this._run("lighting_console/shows/create",{name:t}),this._newShowName="",this._creatingShow=!1)};this._deleteShow=()=>{let t=this._show;if(!t)return;confirm(`Delete "${t.name}" and all ${t.cues.length} of its cues?
+var Tt=Object.defineProperty;var Pt=Object.getOwnPropertyDescriptor;var m=(n,e,t,i)=>{for(var r=i>1?void 0:i?Pt(e,t):e,s=n.length-1,o;s>=0;s--)(o=n[s])&&(r=(i?o(e,t,r):o(r))||r);return i&&r&&Tt(e,t,r),r};var L=globalThis,j=L.ShadowRoot&&(L.ShadyCSS===void 0||L.ShadyCSS.nativeShadow)&&"adoptedStyleSheets"in Document.prototype&&"replace"in CSSStyleSheet.prototype,K=Symbol(),lt=new WeakMap,P=class{constructor(e,t,i){if(this._$cssResult$=!0,i!==K)throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");this.cssText=e,this.t=t}get styleSheet(){let e=this.o,t=this.t;if(j&&e===void 0){let i=t!==void 0&&t.length===1;i&&(e=lt.get(t)),e===void 0&&((this.o=e=new CSSStyleSheet).replaceSync(this.cssText),i&&lt.set(t,e))}return e}toString(){return this.cssText}},ct=n=>new P(typeof n=="string"?n:n+"",void 0,K),M=(n,...e)=>{let t=n.length===1?n[0]:e.reduce((i,r,s)=>i+(o=>{if(o._$cssResult$===!0)return o.cssText;if(typeof o=="number")return o;throw Error("Value passed to 'css' function must be a 'css' function result: "+o+". Use 'unsafeCSS' to pass non-literal values, but take care to ensure page security.")})(r)+n[s+1],n[0]);return new P(t,n,K)},dt=(n,e)=>{if(j)n.adoptedStyleSheets=e.map(t=>t instanceof CSSStyleSheet?t:t.styleSheet);else for(let t of e){let i=document.createElement("style"),r=L.litNonce;r!==void 0&&i.setAttribute("nonce",r),i.textContent=t.cssText,n.appendChild(i)}},J=j?n=>n:n=>n instanceof CSSStyleSheet?(e=>{let t="";for(let i of e.cssRules)t+=i.cssText;return ct(t)})(n):n;var{is:Mt,defineProperty:Nt,getOwnPropertyDescriptor:Ht,getOwnPropertyNames:Ot,getOwnPropertySymbols:It,getPrototypeOf:Dt}=Object,q=globalThis,ht=q.trustedTypes,Ut=ht?ht.emptyScript:"",zt=q.reactiveElementPolyfillSupport,N=(n,e)=>n,H={toAttribute(n,e){switch(e){case Boolean:n=n?Ut:null;break;case Object:case Array:n=n==null?n:JSON.stringify(n)}return n},fromAttribute(n,e){let t=n;switch(e){case Boolean:t=n!==null;break;case Number:t=n===null?null:Number(n);break;case Object:case Array:try{t=JSON.parse(n)}catch{t=null}}return t}},G=(n,e)=>!Mt(n,e),pt={attribute:!0,type:String,converter:H,reflect:!1,useDefault:!1,hasChanged:G};Symbol.metadata??=Symbol("metadata"),q.litPropertyMetadata??=new WeakMap;var y=class extends HTMLElement{static addInitializer(e){this._$Ei(),(this.l??=[]).push(e)}static get observedAttributes(){return this.finalize(),this._$Eh&&[...this._$Eh.keys()]}static createProperty(e,t=pt){if(t.state&&(t.attribute=!1),this._$Ei(),this.prototype.hasOwnProperty(e)&&((t=Object.create(t)).wrapped=!0),this.elementProperties.set(e,t),!t.noAccessor){let i=Symbol(),r=this.getPropertyDescriptor(e,i,t);r!==void 0&&Nt(this.prototype,e,r)}}static getPropertyDescriptor(e,t,i){let{get:r,set:s}=Ht(this.prototype,e)??{get(){return this[t]},set(o){this[t]=o}};return{get:r,set(o){let l=r?.call(this);s?.call(this,o),this.requestUpdate(e,l,i)},configurable:!0,enumerable:!0}}static getPropertyOptions(e){return this.elementProperties.get(e)??pt}static _$Ei(){if(this.hasOwnProperty(N("elementProperties")))return;let e=Dt(this);e.finalize(),e.l!==void 0&&(this.l=[...e.l]),this.elementProperties=new Map(e.elementProperties)}static finalize(){if(this.hasOwnProperty(N("finalized")))return;if(this.finalized=!0,this._$Ei(),this.hasOwnProperty(N("properties"))){let t=this.properties,i=[...Ot(t),...It(t)];for(let r of i)this.createProperty(r,t[r])}let e=this[Symbol.metadata];if(e!==null){let t=litPropertyMetadata.get(e);if(t!==void 0)for(let[i,r]of t)this.elementProperties.set(i,r)}this._$Eh=new Map;for(let[t,i]of this.elementProperties){let r=this._$Eu(t,i);r!==void 0&&this._$Eh.set(r,t)}this.elementStyles=this.finalizeStyles(this.styles)}static finalizeStyles(e){let t=[];if(Array.isArray(e)){let i=new Set(e.flat(1/0).reverse());for(let r of i)t.unshift(J(r))}else e!==void 0&&t.push(J(e));return t}static _$Eu(e,t){let i=t.attribute;return i===!1?void 0:typeof i=="string"?i:typeof e=="string"?e.toLowerCase():void 0}constructor(){super(),this._$Ep=void 0,this.isUpdatePending=!1,this.hasUpdated=!1,this._$Em=null,this._$Ev()}_$Ev(){this._$ES=new Promise(e=>this.enableUpdating=e),this._$AL=new Map,this._$E_(),this.requestUpdate(),this.constructor.l?.forEach(e=>e(this))}addController(e){(this._$EO??=new Set).add(e),this.renderRoot!==void 0&&this.isConnected&&e.hostConnected?.()}removeController(e){this._$EO?.delete(e)}_$E_(){let e=new Map,t=this.constructor.elementProperties;for(let i of t.keys())this.hasOwnProperty(i)&&(e.set(i,this[i]),delete this[i]);e.size>0&&(this._$Ep=e)}createRenderRoot(){let e=this.shadowRoot??this.attachShadow(this.constructor.shadowRootOptions);return dt(e,this.constructor.elementStyles),e}connectedCallback(){this.renderRoot??=this.createRenderRoot(),this.enableUpdating(!0),this._$EO?.forEach(e=>e.hostConnected?.())}enableUpdating(e){}disconnectedCallback(){this._$EO?.forEach(e=>e.hostDisconnected?.())}attributeChangedCallback(e,t,i){this._$AK(e,i)}_$ET(e,t){let i=this.constructor.elementProperties.get(e),r=this.constructor._$Eu(e,i);if(r!==void 0&&i.reflect===!0){let s=(i.converter?.toAttribute!==void 0?i.converter:H).toAttribute(t,i.type);this._$Em=e,s==null?this.removeAttribute(r):this.setAttribute(r,s),this._$Em=null}}_$AK(e,t){let i=this.constructor,r=i._$Eh.get(e);if(r!==void 0&&this._$Em!==r){let s=i.getPropertyOptions(r),o=typeof s.converter=="function"?{fromAttribute:s.converter}:s.converter?.fromAttribute!==void 0?s.converter:H;this._$Em=r;let l=o.fromAttribute(t,s.type);this[r]=l??this._$Ej?.get(r)??l,this._$Em=null}}requestUpdate(e,t,i,r=!1,s){if(e!==void 0){let o=this.constructor;if(r===!1&&(s=this[e]),i??=o.getPropertyOptions(e),!((i.hasChanged??G)(s,t)||i.useDefault&&i.reflect&&s===this._$Ej?.get(e)&&!this.hasAttribute(o._$Eu(e,i))))return;this.C(e,t,i)}this.isUpdatePending===!1&&(this._$ES=this._$EP())}C(e,t,{useDefault:i,reflect:r,wrapped:s},o){i&&!(this._$Ej??=new Map).has(e)&&(this._$Ej.set(e,o??t??this[e]),s!==!0||o!==void 0)||(this._$AL.has(e)||(this.hasUpdated||i||(t=void 0),this._$AL.set(e,t)),r===!0&&this._$Em!==e&&(this._$Eq??=new Set).add(e))}async _$EP(){this.isUpdatePending=!0;try{await this._$ES}catch(t){Promise.reject(t)}let e=this.scheduleUpdate();return e!=null&&await e,!this.isUpdatePending}scheduleUpdate(){return this.performUpdate()}performUpdate(){if(!this.isUpdatePending)return;if(!this.hasUpdated){if(this.renderRoot??=this.createRenderRoot(),this._$Ep){for(let[r,s]of this._$Ep)this[r]=s;this._$Ep=void 0}let i=this.constructor.elementProperties;if(i.size>0)for(let[r,s]of i){let{wrapped:o}=s,l=this[r];o!==!0||this._$AL.has(r)||l===void 0||this.C(r,void 0,s,l)}}let e=!1,t=this._$AL;try{e=this.shouldUpdate(t),e?(this.willUpdate(t),this._$EO?.forEach(i=>i.hostUpdate?.()),this.update(t)):this._$EM()}catch(i){throw e=!1,this._$EM(),i}e&&this._$AE(t)}willUpdate(e){}_$AE(e){this._$EO?.forEach(t=>t.hostUpdated?.()),this.hasUpdated||(this.hasUpdated=!0,this.firstUpdated(e)),this.updated(e)}_$EM(){this._$AL=new Map,this.isUpdatePending=!1}get updateComplete(){return this.getUpdateComplete()}getUpdateComplete(){return this._$ES}shouldUpdate(e){return!0}update(e){this._$Eq&&=this._$Eq.forEach(t=>this._$ET(t,this[t])),this._$EM()}updated(e){}firstUpdated(e){}};y.elementStyles=[],y.shadowRootOptions={mode:"open"},y[N("elementProperties")]=new Map,y[N("finalized")]=new Map,zt?.({ReactiveElement:y}),(q.reactiveElementVersions??=[]).push("2.1.2");var it=globalThis,ut=n=>n,F=it.trustedTypes,mt=F?F.createPolicy("lit-html",{createHTML:n=>n}):void 0,$t="$lit$",x=`lit$${Math.random().toFixed(9).slice(2)}$`,yt="?"+x,Bt=`<${yt}>`,E=document,I=()=>E.createComment(""),D=n=>n===null||typeof n!="object"&&typeof n!="function",rt=Array.isArray,Lt=n=>rt(n)||typeof n?.[Symbol.iterator]=="function",Y=`[ 	
+\f\r]`,O=/<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g,gt=/-->/g,ft=/>/g,w=RegExp(`>|${Y}(?:([^\\s"'>=/]+)(${Y}*=${Y}*(?:[^ 	
+\f\r"'\`<>=]|("|')|))|$)`,"g"),_t=/'/g,bt=/"/g,xt=/^(?:script|style|textarea|title)$/i,st=n=>(e,...t)=>({_$litType$:n,strings:e,values:t}),a=st(1),Xt=st(2),te=st(3),k=Symbol.for("lit-noChange"),d=Symbol.for("lit-nothing"),vt=new WeakMap,S=E.createTreeWalker(E,129);function wt(n,e){if(!rt(n)||!n.hasOwnProperty("raw"))throw Error("invalid template strings array");return mt!==void 0?mt.createHTML(e):e}var jt=(n,e)=>{let t=n.length-1,i=[],r,s=e===2?"<svg>":e===3?"<math>":"",o=O;for(let l=0;l<t;l++){let c=n[l],h,p,u=-1,_=0;for(;_<c.length&&(o.lastIndex=_,p=o.exec(c),p!==null);)_=o.lastIndex,o===O?p[1]==="!--"?o=gt:p[1]!==void 0?o=ft:p[2]!==void 0?(xt.test(p[2])&&(r=RegExp("</"+p[2],"g")),o=w):p[3]!==void 0&&(o=w):o===w?p[0]===">"?(o=r??O,u=-1):p[1]===void 0?u=-2:(u=o.lastIndex-p[2].length,h=p[1],o=p[3]===void 0?w:p[3]==='"'?bt:_t):o===bt||o===_t?o=w:o===gt||o===ft?o=O:(o=w,r=void 0);let v=o===w&&n[l+1].startsWith("/>")?" ":"";s+=o===O?c+Bt:u>=0?(i.push(h),c.slice(0,u)+$t+c.slice(u)+x+v):c+x+(u===-2?l:v)}return[wt(n,s+(n[t]||"<?>")+(e===2?"</svg>":e===3?"</math>":"")),i]},U=class n{constructor({strings:e,_$litType$:t},i){let r;this.parts=[];let s=0,o=0,l=e.length-1,c=this.parts,[h,p]=jt(e,t);if(this.el=n.createElement(h,i),S.currentNode=this.el.content,t===2||t===3){let u=this.el.content.firstChild;u.replaceWith(...u.childNodes)}for(;(r=S.nextNode())!==null&&c.length<l;){if(r.nodeType===1){if(r.hasAttributes())for(let u of r.getAttributeNames())if(u.endsWith($t)){let _=p[o++],v=r.getAttribute(u).split(x),B=/([.?@])?(.*)/.exec(_);c.push({type:1,index:s,name:B[2],strings:v,ctor:B[1]==="."?Z:B[1]==="?"?X:B[1]==="@"?tt:R}),r.removeAttribute(u)}else u.startsWith(x)&&(c.push({type:6,index:s}),r.removeAttribute(u));if(xt.test(r.tagName)){let u=r.textContent.split(x),_=u.length-1;if(_>0){r.textContent=F?F.emptyScript:"";for(let v=0;v<_;v++)r.append(u[v],I()),S.nextNode(),c.push({type:2,index:++s});r.append(u[_],I())}}}else if(r.nodeType===8)if(r.data===yt)c.push({type:2,index:s});else{let u=-1;for(;(u=r.data.indexOf(x,u+1))!==-1;)c.push({type:7,index:s}),u+=x.length-1}s++}}static createElement(e,t){let i=E.createElement("template");return i.innerHTML=e,i}};function A(n,e,t=n,i){if(e===k)return e;let r=i!==void 0?t._$Co?.[i]:t._$Cl,s=D(e)?void 0:e._$litDirective$;return r?.constructor!==s&&(r?._$AO?.(!1),s===void 0?r=void 0:(r=new s(n),r._$AT(n,t,i)),i!==void 0?(t._$Co??=[])[i]=r:t._$Cl=r),r!==void 0&&(e=A(n,r._$AS(n,e.values),r,i)),e}var Q=class{constructor(e,t){this._$AV=[],this._$AN=void 0,this._$AD=e,this._$AM=t}get parentNode(){return this._$AM.parentNode}get _$AU(){return this._$AM._$AU}u(e){let{el:{content:t},parts:i}=this._$AD,r=(e?.creationScope??E).importNode(t,!0);S.currentNode=r;let s=S.nextNode(),o=0,l=0,c=i[0];for(;c!==void 0;){if(o===c.index){let h;c.type===2?h=new z(s,s.nextSibling,this,e):c.type===1?h=new c.ctor(s,c.name,c.strings,this,e):c.type===6&&(h=new et(s,this,e)),this._$AV.push(h),c=i[++l]}o!==c?.index&&(s=S.nextNode(),o++)}return S.currentNode=E,r}p(e){let t=0;for(let i of this._$AV)i!==void 0&&(i.strings!==void 0?(i._$AI(e,i,t),t+=i.strings.length-2):i._$AI(e[t])),t++}},z=class n{get _$AU(){return this._$AM?._$AU??this._$Cv}constructor(e,t,i,r){this.type=2,this._$AH=d,this._$AN=void 0,this._$AA=e,this._$AB=t,this._$AM=i,this.options=r,this._$Cv=r?.isConnected??!0}get parentNode(){let e=this._$AA.parentNode,t=this._$AM;return t!==void 0&&e?.nodeType===11&&(e=t.parentNode),e}get startNode(){return this._$AA}get endNode(){return this._$AB}_$AI(e,t=this){e=A(this,e,t),D(e)?e===d||e==null||e===""?(this._$AH!==d&&this._$AR(),this._$AH=d):e!==this._$AH&&e!==k&&this._(e):e._$litType$!==void 0?this.$(e):e.nodeType!==void 0?this.T(e):Lt(e)?this.k(e):this._(e)}O(e){return this._$AA.parentNode.insertBefore(e,this._$AB)}T(e){this._$AH!==e&&(this._$AR(),this._$AH=this.O(e))}_(e){this._$AH!==d&&D(this._$AH)?this._$AA.nextSibling.data=e:this.T(E.createTextNode(e)),this._$AH=e}$(e){let{values:t,_$litType$:i}=e,r=typeof i=="number"?this._$AC(e):(i.el===void 0&&(i.el=U.createElement(wt(i.h,i.h[0]),this.options)),i);if(this._$AH?._$AD===r)this._$AH.p(t);else{let s=new Q(r,this),o=s.u(this.options);s.p(t),this.T(o),this._$AH=s}}_$AC(e){let t=vt.get(e.strings);return t===void 0&&vt.set(e.strings,t=new U(e)),t}k(e){rt(this._$AH)||(this._$AH=[],this._$AR());let t=this._$AH,i,r=0;for(let s of e)r===t.length?t.push(i=new n(this.O(I()),this.O(I()),this,this.options)):i=t[r],i._$AI(s),r++;r<t.length&&(this._$AR(i&&i._$AB.nextSibling,r),t.length=r)}_$AR(e=this._$AA.nextSibling,t){for(this._$AP?.(!1,!0,t);e!==this._$AB;){let i=ut(e).nextSibling;ut(e).remove(),e=i}}setConnected(e){this._$AM===void 0&&(this._$Cv=e,this._$AP?.(e))}},R=class{get tagName(){return this.element.tagName}get _$AU(){return this._$AM._$AU}constructor(e,t,i,r,s){this.type=1,this._$AH=d,this._$AN=void 0,this.element=e,this.name=t,this._$AM=r,this.options=s,i.length>2||i[0]!==""||i[1]!==""?(this._$AH=Array(i.length-1).fill(new String),this.strings=i):this._$AH=d}_$AI(e,t=this,i,r){let s=this.strings,o=!1;if(s===void 0)e=A(this,e,t,0),o=!D(e)||e!==this._$AH&&e!==k,o&&(this._$AH=e);else{let l=e,c,h;for(e=s[0],c=0;c<s.length-1;c++)h=A(this,l[i+c],t,c),h===k&&(h=this._$AH[c]),o||=!D(h)||h!==this._$AH[c],h===d?e=d:e!==d&&(e+=(h??"")+s[c+1]),this._$AH[c]=h}o&&!r&&this.j(e)}j(e){e===d?this.element.removeAttribute(this.name):this.element.setAttribute(this.name,e??"")}},Z=class extends R{constructor(){super(...arguments),this.type=3}j(e){this.element[this.name]=e===d?void 0:e}},X=class extends R{constructor(){super(...arguments),this.type=4}j(e){this.element.toggleAttribute(this.name,!!e&&e!==d)}},tt=class extends R{constructor(e,t,i,r,s){super(e,t,i,r,s),this.type=5}_$AI(e,t=this){if((e=A(this,e,t,0)??d)===k)return;let i=this._$AH,r=e===d&&i!==d||e.capture!==i.capture||e.once!==i.once||e.passive!==i.passive,s=e!==d&&(i===d||r);r&&this.element.removeEventListener(this.name,this,i),s&&this.element.addEventListener(this.name,this,e),this._$AH=e}handleEvent(e){typeof this._$AH=="function"?this._$AH.call(this.options?.host??this.element,e):this._$AH.handleEvent(e)}},et=class{constructor(e,t,i){this.element=e,this.type=6,this._$AN=void 0,this._$AM=t,this.options=i}get _$AU(){return this._$AM._$AU}_$AI(e){A(this,e)}};var qt=it.litHtmlPolyfillSupport;qt?.(U,z),(it.litHtmlVersions??=[]).push("3.3.3");var St=(n,e,t)=>{let i=t?.renderBefore??e,r=i._$litPart$;if(r===void 0){let s=t?.renderBefore??null;i._$litPart$=r=new z(e.insertBefore(I(),s),s,void 0,t??{})}return r._$AI(n),r};var nt=globalThis,$=class extends y{constructor(){super(...arguments),this.renderOptions={host:this},this._$Do=void 0}createRenderRoot(){let e=super.createRenderRoot();return this.renderOptions.renderBefore??=e.firstChild,e}update(e){let t=this.render();this.hasUpdated||(this.renderOptions.isConnected=this.isConnected),super.update(e),this._$Do=St(t,this.renderRoot,this.renderOptions)}connectedCallback(){super.connectedCallback(),this._$Do?.setConnected(!0)}disconnectedCallback(){super.disconnectedCallback(),this._$Do?.setConnected(!1)}render(){return k}};$._$litElement$=!0,$.finalized=!0,nt.litElementHydrateSupport?.({LitElement:$});var Gt=nt.litElementPolyfillSupport;Gt?.({LitElement:$});(nt.litElementVersions??=[]).push("4.2.2");var Ft={attribute:!0,type:String,converter:H,reflect:!1,hasChanged:G},Wt=(n=Ft,e,t)=>{let{kind:i,metadata:r}=t,s=globalThis.litPropertyMetadata.get(r);if(s===void 0&&globalThis.litPropertyMetadata.set(r,s=new Map),i==="setter"&&((n=Object.create(n)).wrapped=!0),s.set(t.name,n),i==="accessor"){let{name:o}=t;return{set(l){let c=e.get.call(this);e.set.call(this,l),this.requestUpdate(o,c,n,!0,l)},init(l){return l!==void 0&&this.C(o,void 0,n,l),l}}}if(i==="setter"){let{name:o}=t;return function(l){let c=this[o];e.call(this,l),this.requestUpdate(o,c,n,!0,l)}}throw Error("Unsupported decorator location: "+i)};function C(n){return(e,t)=>typeof t=="object"?Wt(n,e,t):((i,r,s)=>{let o=r.hasOwnProperty(s);return r.constructor.createProperty(s,i),o?Object.getOwnPropertyDescriptor(r,s):void 0})(n,e,t)}function g(n){return C({...n,state:!0,attribute:!1})}function V(n,e){customElements.whenDefined("home-assistant").then(()=>{customElements.get(n)||customElements.define(n,e)})}function Et(n){window.customCards=window.customCards??[],window.customCards.some(e=>e.type===n.type)||window.customCards.push(n)}var kt={unavailable:{label:"Unavailable",tone:"bad"},hue_color_no_area:{label:"Not in an area",tone:"warn"},streamable:{label:"Effects",tone:"good"},rest_only:{label:"Home Assistant",tone:"neutral"}},At=[0,.5,1,2,3,5,10,20,30];function ot(n){return n<=0?"snap":n<1?`${n}s`:`${Number.isInteger(n)?n:n.toFixed(1)}s`}var at=(n,e,t,i,r)=>({key:n,label:e,type:"number",default:0,minimum:0,maximum:i,step:r,unit:t,options:[],help:""}),Vt=[{key:"targets",label:"Lights",type:"entities",default:[],minimum:null,maximum:null,step:null,unit:"",options:[],help:""},{...at("hold_ms","Hold","ms",6e4,10),default:500,minimum:50},at("fade_in","Fade in","s",10,.1),at("fade_out","Fade out","s",10,.1)],f=class extends ${constructor(){super(...arguments);this._effects=[];this._busy=!1;this._creatingShow=!1;this._newShowName="";this._importing=!1;this._addingEffect=!1;this._draftParams={};this._createShow=()=>{let t=this._newShowName.trim();t&&(this._run("lighting_console/shows/create",{name:t}),this._newShowName="",this._creatingShow=!1)};this._deleteShow=()=>{let t=this._show;if(!t)return;confirm(`Delete "${t.name}" and all ${t.cues.length} of its cues?
 
-This cannot be undone.`)&&this._run("lighting_console/shows/delete",{show_id:t.id})};this._openImport=()=>{this._importing=!0,this._importGroups=void 0,(async()=>{try{let t=await this._call("lighting_console/import/groups");this._importGroups=t.groups}catch(t){this._error=t instanceof Error?t.message:String(t),this._importing=!1}})()};this._previewDraft=()=>{this._draftEffect&&(async()=>{try{await this._call("lighting_console/effects/preview",{effect:this._draftEffect,params:this._draftParams}),this._summary=await this._call("lighting_console/shows/list")}catch(t){this._error=t instanceof Error?t.message:String(t)}})()};this._saveDraft=()=>{this._draftEffect&&(this._run("lighting_console/cues/add_effect",{effect:this._draftEffect,params:this._draftParams}),this._addingEffect=!1,this._draftEffect=void 0)}}updated(t){t.has("hass")&&this.hass&&!this._summary&&!this._error&&this._load()}async _call(t,r={}){return this.hass.callWS({type:t,...r})}async _load(){try{let[t,r,i]=await Promise.all([this._call("lighting_console/shows/list"),this._call("lighting_console/effects/list"),this._call("lighting_console/rig/list")]);this._summary=t,this._effects=r.effects,this._rig=i,this._error=void 0}catch(t){this._error=t instanceof Error?t.message:String(t)}}_run(t,r={}){this._busy||(this._busy=!0,(async()=>{try{this._summary=await this._call(t,r),this._error=void 0}catch(i){this._error=i instanceof Error?i.message:String(i)}finally{this._busy=!1}})())}get _show(){return this._summary?.active_show??null}get _cues(){return this._show?.cues??[]}render(){return this._error?a`<div class="error">
+This cannot be undone.`)&&this._run("lighting_console/shows/delete",{show_id:t.id})};this._openImport=()=>{this._importing=!0,this._importGroups=void 0,(async()=>{try{let t=await this._call("lighting_console/import/groups");this._importGroups=t.groups}catch(t){this._error=t instanceof Error?t.message:String(t),this._importing=!1}})()};this._previewDraft=()=>{this._draftEffect&&(async()=>{try{await this._call("lighting_console/effects/preview",{effect:this._draftEffect,params:this._draftParams}),this._summary=await this._call("lighting_console/shows/list")}catch(t){this._error=t instanceof Error?t.message:String(t)}})()};this._saveDraft=()=>{this._draftEffect&&(this._run("lighting_console/cues/add_effect",{effect:this._draftEffect,params:this._draftParams}),this._addingEffect=!1,this._draftEffect=void 0)};this._snapshotShow=()=>{let t=this._show;if(!t)return;let i=new Date().toISOString().slice(0,16).replace("T"," ");this._run("lighting_console/shows/duplicate",{show_id:t.id,name:`${t.name} \u2014 snapshot ${i}`})}}updated(t){t.has("hass")&&this.hass&&!this._summary&&!this._error&&this._load()}async _call(t,i={}){return this.hass.callWS({type:t,...i})}async _load(){try{let[t,i,r]=await Promise.all([this._call("lighting_console/shows/list"),this._call("lighting_console/effects/list"),this._call("lighting_console/rig/list")]);this._summary=t,this._effects=i.effects,this._rig=r,this._error=void 0}catch(t){this._error=t instanceof Error?t.message:String(t)}}_run(t,i={}){this._busy||(this._busy=!0,(async()=>{try{this._summary=await this._call(t,i),this._error=void 0}catch(r){this._error=r instanceof Error?r.message:String(r)}finally{this._busy=!1}})())}get _show(){return this._summary?.active_show??null}get _cues(){return this._show?.cues??[]}render(){return this._error?a`<div class="error">
         <b>The console could not be reached.</b>
         <div>${this._error}</div>
         <button @click=${()=>{this._error=void 0,this._load()}}>
@@ -28,21 +28,27 @@ This cannot be undone.`)&&this._run("lighting_console/shows/delete",{show_id:t.i
         <select
           .value=${t.active_show_id??""}
           ?disabled=${this._busy||t.shows.length===0}
-          @change=${r=>this._run("lighting_console/shows/activate",{show_id:r.target.value})}
+          @change=${i=>this._run("lighting_console/shows/activate",{show_id:i.target.value})}
         >
-          ${t.shows.map(r=>a`<option value=${r.id}>
-              ${r.name} · ${r.cue_count} cue${r.cue_count===1?"":"s"}
+          ${t.shows.map(i=>a`<option value=${i.id}>
+              ${i.name} · ${i.cue_count} cue${i.cue_count===1?"":"s"}
             </option>`)}
         </select>
         <button @click=${()=>this._creatingShow=!0}>New show</button>
         <button @click=${this._openImport}>Import from Hue</button>
         ${this._show?a`<button
-              class="danger-text"
-              @click=${this._deleteShow}
-              title="Delete this show and every cue in it"
-            >
-              Delete show
-            </button>`:d}
+                @click=${this._snapshotShow}
+                title="Copy this show, cues and all, as a snapshot to fall back to"
+              >
+                Snapshot
+              </button>
+              <button
+                class="danger-text"
+                @click=${this._deleteShow}
+                title="Delete this show and every cue in it"
+              >
+                Delete show
+              </button>`:d}
       </div>
       ${this._creatingShow?this._renderCreateShow():d}
       ${this._importing?this._renderImport():d}
@@ -101,15 +107,15 @@ This cannot be undone.`)&&this._run("lighting_console/shows/delete",{show_id:t.i
           <button @click=${()=>this._importing=!1}>Close</button>
         </div>
       </div>
-    `}_runImport(t){this._run("lighting_console/import/run",{group_id:t.id,name:t.name,default_fade:0}),this._importing=!1}_renderConsole(){let t=this._summary.playback,r=this._cues,i=t.current_index===null?null:r[t.current_index]??null,n=t.current_index===null?r[0]:r[t.current_index+1];return a`
+    `}_runImport(t){this._run("lighting_console/import/run",{group_id:t.id,name:t.name,default_fade:0}),this._importing=!1}_renderConsole(){let t=this._summary.playback,i=this._cues,r=t.current_index===null?null:i[t.current_index]??null,s=t.current_index===null?i[0]:i[t.current_index+1];return a`
       <div class="transport">
         <button
           class="go"
-          ?disabled=${this._busy||!n}
+          ?disabled=${this._busy||!s}
           @click=${()=>this._run("lighting_console/playback/go")}
         >
           <span class="golabel">GO</span>
-          <span class="gonext">${n?n.label:"end of show"}</span>
+          <span class="gonext">${s?s.label:"end of show"}</span>
         </button>
         <div class="transport-side">
           <button
@@ -131,7 +137,7 @@ This cannot be undone.`)&&this._run("lighting_console/shows/delete",{show_id:t.i
       <div class="statusline">
         <span
           >On stage:
-          <b>${i?`${i.label}${i.name?` \u2014 ${i.name}`:""}`:"nothing"}</b></span
+          <b>${r?`${r.label}${r.name?` \u2014 ${r.name}`:""}`:"nothing"}</b></span
         >
         ${t.effect.running?a`<span class="running"
               >${t.effect.running} running
@@ -154,7 +160,7 @@ This cannot be undone.`)&&this._run("lighting_console/shows/delete",{show_id:t.i
       </div>
 
       ${this._addingEffect?this._renderEffectDraft():d}
-      ${r.length===0?this._renderNoCues():this._renderCues(r,t.current_cue_id)}
+      ${i.length===0?this._renderNoCues():this._renderCues(i,t.current_cue_id)}
     `}_renderNoCues(){return a`
       <div class="empty">
         <h3>No cues yet</h3>
@@ -165,7 +171,7 @@ This cannot be undone.`)&&this._run("lighting_console/shows/delete",{show_id:t.i
           including the lights that are off.
         </p>
       </div>
-    `}_renderCues(t,r){return a`
+    `}_renderCues(t,i){return a`
       <table class="cues">
         <thead>
           <tr>
@@ -176,16 +182,16 @@ This cannot be undone.`)&&this._run("lighting_console/shows/delete",{show_id:t.i
           </tr>
         </thead>
         <tbody>
-          ${t.map((i,n)=>this._renderCueRow(i,n,r))}
+          ${t.map((r,s)=>this._renderCueRow(r,s,i))}
         </tbody>
       </table>
-    `}_renderCueRow(t,r,i){let n=t.id===i,o=t.id===this._editingCueId;return a`
+    `}_renderCueRow(t,i,r){let s=t.id===r,o=t.id===this._editingCueId;return a`
       <tr
-        class=${`cue ${n?"live":""} ${o?"editing":""}`}
+        class=${`cue ${s?"live":""} ${o?"editing":""}`}
         draggable="true"
-        @dragstart=${()=>this._dragFrom=r}
+        @dragstart=${()=>this._dragFrom=i}
         @dragover=${l=>l.preventDefault()}
-        @drop=${()=>this._dropOn(r)}
+        @drop=${()=>this._dropOn(i)}
       >
         <td class="c-label">
           <button
@@ -202,20 +208,20 @@ This cannot be undone.`)&&this._run("lighting_console/shows/delete",{show_id:t.i
         </td>
         <td class="c-fade">${t.kind==="effect"?"\u2014":ot(t.fade)}</td>
         <td class="c-actions">
-          <button title="Move up" ?disabled=${r===0} @click=${()=>this._move(r,-1)}>↑</button>
-          <button title="Move down" ?disabled=${r===this._cues.length-1} @click=${()=>this._move(r,1)}>↓</button>
+          <button title="Move up" ?disabled=${i===0} @click=${()=>this._move(i,-1)}>↑</button>
+          <button title="Move down" ?disabled=${i===this._cues.length-1} @click=${()=>this._move(i,1)}>↓</button>
           <button title="Edit" @click=${()=>this._editingCueId=o?void 0:t.id}>Edit</button>
         </td>
       </tr>
-      ${o?a`<tr class="editorrow"><td colspan="4">${this._renderCueEditor(t,r)}</td></tr>`:d}
-    `}_renderCueEditor(t,r){return a`
+      ${o?a`<tr class="editorrow"><td colspan="4">${this._renderCueEditor(t,i)}</td></tr>`:d}
+    `}_renderCueEditor(t,i){return a`
       <div class="editor">
         <div class="row">
           <label class="grow">
             Cue number
             <input
               .value=${t.label}
-              @change=${i=>this._update(t.id,{label:i.target.value})}
+              @change=${r=>this._update(t.id,{label:r.target.value})}
             />
           </label>
           <label class="grow2">
@@ -223,7 +229,7 @@ This cannot be undone.`)&&this._run("lighting_console/shows/delete",{show_id:t.i
             <input
               .value=${t.name}
               placeholder="what this cue is for"
-              @change=${i=>this._update(t.id,{name:i.target.value})}
+              @change=${r=>this._update(t.id,{name:r.target.value})}
             />
           </label>
         </div>
@@ -231,11 +237,11 @@ This cannot be undone.`)&&this._run("lighting_console/shows/delete",{show_id:t.i
         ${t.kind==="look"?a`
               <div class="row wrap">
                 <span class="fadelabel">Fade</span>
-                ${At.map(i=>a`<button
-                    class=${t.fade===i?"chip on":"chip"}
-                    @click=${()=>this._update(t.id,{fade:i})}
+                ${At.map(r=>a`<button
+                    class=${t.fade===r?"chip on":"chip"}
+                    @click=${()=>this._update(t.id,{fade:r})}
                   >
-                    ${ot(i)}
+                    ${ot(r)}
                   </button>`)}
                 <input
                   class="fadeinput"
@@ -243,7 +249,7 @@ This cannot be undone.`)&&this._run("lighting_console/shows/delete",{show_id:t.i
                   min="0"
                   step="0.05"
                   .value=${String(t.fade)}
-                  @change=${i=>this._update(t.id,{fade:Number(i.target.value)})}
+                  @change=${r=>this._update(t.id,{fade:Number(r.target.value)})}
                 />
               </div>
               <div class="row">
@@ -254,16 +260,16 @@ This cannot be undone.`)&&this._run("lighting_console/shows/delete",{show_id:t.i
                   Re-record from the live rig
                 </button>
                 <span class="muted"
-                  >${t.levels.filter(i=>i.state==="on").length} of
+                  >${t.levels.filter(r=>r.state==="on").length} of
                   ${t.levels.length} lights on</span
                 >
               </div>
-            `:this._renderEffectParams(t.effect??"",t.effect_params,i=>this._update(t.id,{effect_params:i}))}
+            `:this._renderEffectParams(t.effect??"",t.effect_params,r=>this._update(t.id,{effect_params:r}))}
 
         ${t.notes?a`<div class="muted notes">${t.notes}</div>`:d}
 
         <div class="row">
-          <button @click=${()=>this._insertAfter(r)}>
+          <button @click=${()=>this._insertAfter(i)}>
             Insert a cue after this one
           </button>
           <button @click=${()=>this._duplicateCue(t)}>Duplicate ${t.label}</button>
@@ -272,20 +278,20 @@ This cannot be undone.`)&&this._run("lighting_console/shows/delete",{show_id:t.i
           </button>
         </div>
       </div>
-    `}_renderEffectDraft(){let t=this._effects.find(r=>r.name===this._draftEffect);return a`
+    `}_renderEffectDraft(){let t=this._effects.find(i=>i.name===this._draftEffect);return a`
       <div class="panel">
         <h4>Effect cue</h4>
         <div class="row wrap">
-          ${this._effects.map(r=>a`<button
-              class=${r.name===this._draftEffect?"chip on":"chip"}
-              @click=${()=>{this._draftEffect=r.name,this._draftParams=Object.fromEntries(r.params.map(i=>[i.key,i.default]))}}
+          ${this._effects.map(i=>a`<button
+              class=${i.name===this._draftEffect?"chip on":"chip"}
+              @click=${()=>{this._draftEffect=i.name,this._draftParams=Object.fromEntries(i.params.map(r=>[r.key,r.default]))}}
             >
-              ${r.label}
+              ${i.label}
             </button>`)}
         </div>
         ${t?a`
               <p class="muted">${t.description}</p>
-              ${this._renderEffectParams(t.name,this._draftParams,r=>{this._draftParams=r})}
+              ${this._renderEffectParams(t.name,this._draftParams,i=>{this._draftParams=i})}
               <div class="row">
                 <button @click=${this._previewDraft}>Try it</button>
                 <button @click=${()=>this._stopEffect()}>Stop</button>
@@ -298,51 +304,51 @@ This cannot be undone.`)&&this._run("lighting_console/shows/delete",{show_id:t.i
               <button @click=${()=>this._addingEffect=!1}>Cancel</button>
             </div>`}
       </div>
-    `}_renderEffectParams(t,r,i){let n=this._effects.find(l=>l.name===t);if(!n)return a`<div class="muted">Unknown effect.</div>`;let o=(l,c)=>i({...r,[l]:c});return a`
+    `}_renderEffectParams(t,i,r){let s=this._effects.find(l=>l.name===t);if(!s)return a`<div class="muted">Unknown effect.</div>`;let o=(l,c)=>r({...i,[l]:c});return a`
       <div class="params">
-        ${n.params.map(l=>this._renderParam(l,r,o))}
+        ${s.params.map(l=>this._renderParam(l,i,o))}
       </div>
-    `}_renderParam(t,r,i){let n=r[t.key]??t.default;if(t.type==="number")return a`<label>
+    `}_renderParam(t,i,r){let s=i[t.key]??t.default;if(t.type==="number")return a`<label>
         ${t.label}${t.unit?` (${t.unit})`:""}
         <input
           type="number"
-          .value=${String(n??"")}
+          .value=${String(s??"")}
           min=${t.minimum??d}
           max=${t.maximum??d}
           step=${t.step??d}
-          @change=${o=>i(t.key,Number(o.target.value))}
+          @change=${o=>r(t.key,Number(o.target.value))}
         />
         ${t.help?a`<small class="muted">${t.help}</small>`:d}
       </label>`;if(t.type==="select")return a`<label>
         ${t.label}
         <select
-          .value=${String(n??"")}
-          @change=${o=>i(t.key,o.target.value)}
+          .value=${String(s??"")}
+          @change=${o=>r(t.key,o.target.value)}
         >
           ${t.options.map(o=>a`<option value=${o}>${o}</option>`)}
         </select>
-      </label>`;if(t.type==="color"){let o=n??[[255,255,255]];return a`<label>
+      </label>`;if(t.type==="color"){let o=s??[[255,255,255]];return a`<label>
         ${t.label}
         <span class="colors">
           ${o.map((l,c)=>a`<input
               type="color"
-              .value=${z(l)}
-              @change=${h=>{let p=o.map((g,b)=>b===c?Ft(h.target.value):g);i(t.key,p)}}
+              .value=${T(l)}
+              @change=${h=>{let p=o.map((u,_)=>_===c?Rt(h.target.value):u);r(t.key,p)}}
             />`)}
           <button
             class="chip"
             title="Add another colour to cycle through"
-            @click=${()=>i(t.key,[...o,[255,255,255]])}
+            @click=${()=>r(t.key,[...o,[255,255,255]])}
           >
             +
           </button>
-          ${o.length>1?a`<button class="chip" @click=${()=>i(t.key,o.slice(0,-1))}>
+          ${o.length>1?a`<button class="chip" @click=${()=>r(t.key,o.slice(0,-1))}>
                 −
               </button>`:d}
         </span>
-        ${this._renderSwatches(o,l=>i(t.key,l))}
+        ${this._renderSwatches(o,l=>r(t.key,l))}
         ${t.help?a`<small class="muted">${t.help}</small>`:d}
-      </label>`}if(t.type==="entities"){let o=(n??[]).filter(h=>typeof h=="string"),l=this._rig?.members??[],c=h=>i(t.key,o.includes(h)?o.filter(p=>p!==h):[...o,h]);return a`<label class="wide">
+      </label>`}if(t.type==="entities"){let o=(s??[]).filter(h=>typeof h=="string"),l=this._rig?.members??[],c=h=>r(t.key,o.includes(h)?o.filter(p=>p!==h):[...o,h]);return a`<label class="wide">
         ${t.label}
         <span class="targets">
           ${l.length===0?a`<small class="muted"
@@ -356,19 +362,19 @@ This cannot be undone.`)&&this._run("lighting_console/shows/delete",{show_id:t.i
                 </button>`})}
         </span>
         <span class="targets">
-          <button class="chip" @click=${()=>i(t.key,[])}>
+          <button class="chip" @click=${()=>r(t.key,[])}>
             Whole rig
           </button>
           <button
             class="chip"
-            @click=${()=>i(t.key,l.map(h=>h.entity_id))}
+            @click=${()=>r(t.key,l.map(h=>h.entity_id))}
           >
             All, in rig order
           </button>
           ${o.length>1?a`<button
                 class="chip"
                 title="Walk them the other way"
-                @click=${()=>i(t.key,[...o].reverse())}
+                @click=${()=>r(t.key,[...o].reverse())}
               >
                 Reverse
               </button>`:d}
@@ -376,24 +382,52 @@ This cannot be undone.`)&&this._run("lighting_console/shows/delete",{show_id:t.i
         <small class="muted">
           ${o.length===0?"Empty means the whole rig, in rig order.":`${o.length} light${o.length===1?"":"s"}, driven in the order shown.`}
         </small>
-      </label>`}return a`<label>
+      </label>`}if(t.type==="steps"){let o=s??[],l=(h,p)=>r(t.key,o.map((u,_)=>_===h?p:u)),c={targets:[],color:[255,255,255],hold_ms:500,fade_in:0,fade_out:0};return a`<div class="wide steps">
+        ${t.label}
+        ${o.map((h,p)=>a`<div class="step">
+            <div class="step-head">
+              <span class="ord">${p+1}</span>
+              <input
+                type="color"
+                .value=${T(h.color)}
+                @change=${u=>l(p,{...h,color:Rt(u.target.value)})}
+              />
+              ${this._renderSwatches([h.color],u=>l(p,{...h,color:u[u.length-1]}))}
+              <button
+                class="chip"
+                title="Remove this step"
+                ?disabled=${o.length<=1}
+                @click=${()=>r(t.key,o.filter((u,_)=>_!==p))}
+              >
+                −
+              </button>
+            </div>
+            <div class="params">
+              ${Vt.map(u=>this._renderParam(u,h,(_,v)=>l(p,{...h,[_]:v})))}
+            </div>
+          </div>`)}
+        <button class="chip" @click=${()=>r(t.key,[...o,c])}>
+          + Add a step
+        </button>
+        ${t.help?a`<small class="muted">${t.help}</small>`:d}
+      </div>`}return a`<label>
       ${t.label}
       <input
         type="checkbox"
-        .checked=${!!n}
-        @change=${o=>i(t.key,o.target.checked)}
+        .checked=${!!s}
+        @change=${o=>r(t.key,o.target.checked)}
       />
-    </label>`}_stopEffect(){(async()=>{try{await this._call("lighting_console/effects/stop"),this._summary=await this._call("lighting_console/shows/list")}catch(t){this._error=t instanceof Error?t.message:String(t)}})()}_update(t,r){this._run("lighting_console/cues/update",{cue_id:t,changes:r})}_deleteCue(t){confirm(`Delete ${t.label}?`)&&(this._editingCueId=void 0,this._run("lighting_console/cues/delete",{cue_id:t.id}))}_renderSwatches(t,r){let i=this._show;if(!i)return a``;let n=i.colors??[],o=t[t.length-1],l=p=>r([...t.slice(0,-1),p]),c=()=>this._run("lighting_console/shows/rename",{show_id:i.id,colors:[...n,o]}),h=n.some(p=>z(p)===z(o));return a`<span class="colors swatches">
-      ${n.map(p=>a`<button
+    </label>`}_stopEffect(){(async()=>{try{await this._call("lighting_console/effects/stop"),this._summary=await this._call("lighting_console/shows/list")}catch(t){this._error=t instanceof Error?t.message:String(t)}})()}_update(t,i){this._run("lighting_console/cues/update",{cue_id:t,changes:i})}_deleteCue(t){confirm(`Delete ${t.label}?`)&&(this._editingCueId=void 0,this._run("lighting_console/cues/delete",{cue_id:t.id}))}_renderSwatches(t,i){let r=this._show;if(!r)return a``;let s=r.colors??[],o=t[t.length-1],l=p=>i([...t.slice(0,-1),p]),c=()=>this._run("lighting_console/shows/rename",{show_id:r.id,colors:[...s,o]}),h=s.some(p=>T(p)===T(o));return a`<span class="colors swatches">
+      ${s.map(p=>a`<button
           class="swatch"
-          style="background:${z(p)}"
-          title="Use ${z(p)}"
+          style="background:${T(p)}"
+          title="Use ${T(p)}"
           @click=${()=>l(p)}
         ></button>`)}
       ${h?d:a`<button class="chip" title="Save this colour to the show" @click=${c}>
             ★ save
           </button>`}
-    </span>`}_duplicateCue(t){this._run("lighting_console/cues/duplicate",{cue_id:t.id})}_insertAfter(t){this._run("lighting_console/cues/record",{at:t+1})}_move(t,r){let i=this._cues.map(o=>o.id),n=t+r;n<0||n>=i.length||([i[t],i[n]]=[i[n],i[t]],this._run("lighting_console/cues/reorder",{cue_ids:i}))}_dropOn(t){let r=this._dragFrom;if(this._dragFrom=void 0,r===void 0||r===t)return;let i=this._cues.map(o=>o.id),[n]=i.splice(r,1);i.splice(t,0,n),this._run("lighting_console/cues/reorder",{cue_ids:i})}};f.styles=P`
+    </span>`}_duplicateCue(t){this._run("lighting_console/cues/duplicate",{cue_id:t.id})}_insertAfter(t){this._run("lighting_console/cues/record",{at:t+1})}_move(t,i){let r=this._cues.map(o=>o.id),s=t+i;s<0||s>=r.length||([r[t],r[s]]=[r[s],r[t]],this._run("lighting_console/cues/reorder",{cue_ids:r}))}_dropOn(t){let i=this._dragFrom;if(this._dragFrom=void 0,i===void 0||i===t)return;let r=this._cues.map(o=>o.id),[s]=r.splice(i,1);r.splice(t,0,s),this._run("lighting_console/cues/reorder",{cue_ids:r})}};f.styles=M`
     :host {
       display: block;
     }
@@ -545,6 +579,67 @@ This cannot be undone.`)&&this._run("lighting_console/shows/delete",{show_id:t.i
       flex: 1;
     }
 
+    /* A touch screen — the iPad the show is run from. Laptops keep the
+       denser layout; here every target the operator hits in the dark is a
+       fingertip wide, and GO/Back/Release most of all. */
+    @media (pointer: coarse) {
+      .go {
+        padding: 30px 18px;
+      }
+      .golabel {
+        font-size: 2.4em;
+      }
+      .gonext {
+        font-size: 1em;
+      }
+      .transport {
+        gap: 12px;
+      }
+      .transport-side {
+        gap: 12px;
+        min-width: 132px;
+      }
+      .transport-side button {
+        min-height: 60px;
+        font-size: 1.1em;
+      }
+      .record {
+        padding: 18px;
+      }
+      tr.cue td {
+        padding: 6px 6px;
+      }
+      .labelbtn,
+      .c-actions button {
+        min-height: 44px;
+      }
+      .c-actions button {
+        min-width: 44px;
+      }
+      .chip {
+        min-height: 36px;
+        padding: 6px 12px;
+      }
+      .colors input[type="color"] {
+        width: 52px;
+        height: 44px;
+      }
+      .swatch {
+        width: 40px;
+        height: 40px;
+      }
+      button,
+      input,
+      select {
+        min-height: 40px;
+      }
+      input[type="checkbox"] {
+        min-height: 0;
+        width: 24px;
+        height: 24px;
+      }
+    }
+
     .statusline {
       display: flex;
       justify-content: space-between;
@@ -601,7 +696,10 @@ This cannot be undone.`)&&this._run("lighting_console/shows/delete",{show_id:t.i
       font-weight: 700;
     }
     .c-label {
-      width: 8ch;
+      /* Shrink to the widest label, never wrap it: "Start Queue preset" on
+         three lines pushed every row apart and hid the running order. */
+      width: 1%;
+      white-space: nowrap;
     }
     .c-fade {
       width: 6ch;
@@ -614,8 +712,10 @@ This cannot be undone.`)&&this._run("lighting_console/shows/delete",{show_id:t.i
       text-align: right;
     }
     .c-actions button {
-      padding: 2px 6px;
-      font-size: 0.85em;
+      padding: 2px 8px;
+      min-height: 32px;
+      min-width: 32px;
+      font-size: 0.9em;
     }
     .labelbtn {
       border: none;
@@ -623,6 +723,11 @@ This cannot be undone.`)&&this._run("lighting_console/shows/delete",{show_id:t.i
       padding: 2px 4px;
       font-weight: 600;
       color: var(--primary-text-color);
+      max-width: 22ch;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-variant-numeric: tabular-nums;
+      min-height: 32px;
     }
     .badge {
       display: inline-block;
@@ -651,7 +756,8 @@ This cannot be undone.`)&&this._run("lighting_console/shows/delete",{show_id:t.i
       width: 8ch;
     }
     .chip {
-      padding: 3px 9px;
+      padding: 4px 10px;
+      min-height: 30px;
       border-radius: 999px;
       font-size: 0.85em;
     }
@@ -671,8 +777,24 @@ This cannot be undone.`)&&this._run("lighting_console/shows/delete",{show_id:t.i
       gap: 4px;
       align-items: center;
     }
-    label.wide {
+    label.wide,
+    .wide {
       grid-column: 1 / -1;
+    }
+    .step {
+      border: 1px solid var(--divider-color);
+      border-radius: 8px;
+      padding: 8px;
+      margin-top: 8px;
+    }
+    .step-head {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .steps > small {
+      display: block;
+      margin-top: 6px;
     }
     .targets {
       display: flex;
@@ -690,14 +812,17 @@ This cannot be undone.`)&&this._run("lighting_console/shows/delete",{show_id:t.i
       font-size: 0.85em;
       font-variant-numeric: tabular-nums;
     }
+    .colors {
+      flex-wrap: wrap;
+    }
     .colors input[type="color"] {
-      width: 34px;
-      height: 30px;
+      width: 44px;
+      height: 36px;
       padding: 2px;
     }
     .swatch {
-      width: 26px;
-      height: 26px;
+      width: 32px;
+      height: 32px;
       padding: 0;
       border-radius: 6px;
       border: 1px solid rgba(0, 0, 0, 0.3);
@@ -737,7 +862,7 @@ This cannot be undone.`)&&this._run("lighting_console/shows/delete",{show_id:t.i
     .note.bad {
       color: var(--warning-color, #ffa600);
     }
-  `,u([R({attribute:!1})],f.prototype,"hass",2),u([m()],f.prototype,"_summary",2),u([m()],f.prototype,"_effects",2),u([m()],f.prototype,"_rig",2),u([m()],f.prototype,"_error",2),u([m()],f.prototype,"_busy",2),u([m()],f.prototype,"_creatingShow",2),u([m()],f.prototype,"_newShowName",2),u([m()],f.prototype,"_importing",2),u([m()],f.prototype,"_importGroups",2),u([m()],f.prototype,"_editingCueId",2),u([m()],f.prototype,"_addingEffect",2),u([m()],f.prototype,"_draftEffect",2),u([m()],f.prototype,"_draftParams",2),u([m()],f.prototype,"_dragFrom",2);function z(s){let[e,t,r]=s;return`#${[e,t,r].map(i=>Math.max(0,Math.min(255,i)).toString(16).padStart(2,"0")).join("")}`}function Ft(s){let e=s.replace("#","");return[parseInt(e.slice(0,2),16),parseInt(e.slice(2,4),16),parseInt(e.slice(4,6),16)]}V("lighting-console-cues",f);var kt="lighting-console-card",_=class extends v{constructor(){super(...arguments);this._busy=!1;this._adding=!1;this._filter="";this._tab="show"}setConfig(t){this._config=t}getCardSize(){return 12}updated(t){t.has("hass")&&this.hass&&!this._info&&!this._error&&this._load()}async _call(t,r={}){return this.hass.callWS({type:t,...r})}async _load(){try{let[t,r,i]=await Promise.all([this._call("lighting_console/info"),this._call("lighting_console/rig/list"),this._call("lighting_console/bridge/status")]);this._info=t,this._rig=r,this._bridge=i,this._error=void 0}catch(t){this._error=t instanceof Error?t.message:String(t)}}async _withBusy(t){this._busy=!0;try{await t(),this._error=void 0}catch(r){this._error=r instanceof Error?r.message:String(r)}finally{this._busy=!1}}_refreshBridge(){this._withBusy(async()=>{let t=await this._call("lighting_console/bridge/refresh");this._bridge=t,this._rig=t.rig})}_remove(t){this._withBusy(async()=>{this._rig=await this._call("lighting_console/rig/remove",{entity_ids:[t]})})}_add(t){this._withBusy(async()=>{this._rig=await this._call("lighting_console/rig/add",{entity_ids:[t]}),this._candidates=this._candidates?.filter(r=>r.entity_id!==t)})}_openAdd(){this._adding=!0,this._withBusy(async()=>{let t=await this._call("lighting_console/rig/candidates");this._candidates=t.candidates})}render(){return!this._config||!this.hass?d:a`
+  `,m([C({attribute:!1})],f.prototype,"hass",2),m([g()],f.prototype,"_summary",2),m([g()],f.prototype,"_effects",2),m([g()],f.prototype,"_rig",2),m([g()],f.prototype,"_error",2),m([g()],f.prototype,"_busy",2),m([g()],f.prototype,"_creatingShow",2),m([g()],f.prototype,"_newShowName",2),m([g()],f.prototype,"_importing",2),m([g()],f.prototype,"_importGroups",2),m([g()],f.prototype,"_editingCueId",2),m([g()],f.prototype,"_addingEffect",2),m([g()],f.prototype,"_draftEffect",2),m([g()],f.prototype,"_draftParams",2),m([g()],f.prototype,"_dragFrom",2);function T(n){let[e,t,i]=n;return`#${[e,t,i].map(r=>Math.max(0,Math.min(255,r)).toString(16).padStart(2,"0")).join("")}`}function Rt(n){let e=n.replace("#","");return[parseInt(e.slice(0,2),16),parseInt(e.slice(2,4),16),parseInt(e.slice(4,6),16)]}V("lighting-console-cues",f);var Ct="lighting-console-card",b=class extends ${constructor(){super(...arguments);this._busy=!1;this._adding=!1;this._filter="";this._tab="show"}setConfig(t){this._config=t}getCardSize(){return 12}updated(t){t.has("hass")&&this.hass&&!this._info&&!this._error&&this._load()}async _call(t,i={}){return this.hass.callWS({type:t,...i})}async _load(){try{let[t,i,r]=await Promise.all([this._call("lighting_console/info"),this._call("lighting_console/rig/list"),this._call("lighting_console/bridge/status")]);this._info=t,this._rig=i,this._bridge=r,this._error=void 0}catch(t){this._error=t instanceof Error?t.message:String(t)}}async _withBusy(t){this._busy=!0;try{await t(),this._error=void 0}catch(i){this._error=i instanceof Error?i.message:String(i)}finally{this._busy=!1}}_refreshBridge(){this._withBusy(async()=>{let t=await this._call("lighting_console/bridge/refresh");this._bridge=t,this._rig=t.rig})}_moveMember(t,i){let r=(this._rig?.members??[]).map(o=>o.entity_id),s=t+i;s<0||s>=r.length||([r[t],r[s]]=[r[s],r[t]],this._withBusy(async()=>{this._rig=await this._call("lighting_console/rig/reorder",{entity_ids:r})}))}_remove(t){this._withBusy(async()=>{this._rig=await this._call("lighting_console/rig/remove",{entity_ids:[t]})})}_add(t){this._withBusy(async()=>{this._rig=await this._call("lighting_console/rig/add",{entity_ids:[t]}),this._candidates=this._candidates?.filter(i=>i.entity_id!==t)})}_openAdd(){this._adding=!0,this._withBusy(async()=>{let t=await this._call("lighting_console/rig/candidates");this._candidates=t.candidates})}render(){return!this._config||!this.hass?d:a`
       <ha-card>
         <div class="header">
           <h1>${this._config.title??"Lighting Console"}</h1>
@@ -758,13 +883,13 @@ This cannot be undone.`)&&this._run("lighting_console/shows/delete",{show_id:t.i
           Devices &amp; services.
         </p>
       </div>
-    `}_renderTabs(){let t=(r,i,n)=>a`
+    `}_renderTabs(){let t=(i,r,s)=>a`
       <button
-        class=${this._tab===r?"tab on":"tab"}
-        title=${n}
-        @click=${()=>this._tab=r}
+        class=${this._tab===i?"tab on":"tab"}
+        title=${s}
+        @click=${()=>this._tab=i}
       >
-        ${i}
+        ${r}
       </button>
     `;return a`
       <div class="tabs">
@@ -804,16 +929,16 @@ This cannot be undone.`)&&this._run("lighting_console/shows/delete",{show_id:t.i
               bridge" — until then no effect can run.
             </p>`:a`
               <ul class="areas">
-                ${t.entertainment_areas.map(r=>a`
+                ${t.entertainment_areas.map(i=>a`
                     <li>
-                      <span class="area-name">${r.name}</span>
+                      <span class="area-name">${i.name}</span>
                       <span class="detail">
-                        ${r.light_count}
-                        ${r.light_count===1?"light":"lights"} ·
-                        ${r.channel_count}
-                        ${r.channel_count===1?"channel":"channels"}
+                        ${i.light_count}
+                        ${i.light_count===1?"light":"lights"} ·
+                        ${i.channel_count}
+                        ${i.channel_count===1?"channel":"channels"}
                       </span>
-                      ${r.streaming?a`<span class="chip good">streaming</span>`:d}
+                      ${i.streaming?a`<span class="chip good">streaming</span>`:d}
                     </li>
                   `)}
               </ul>
@@ -843,18 +968,34 @@ This cannot be undone.`)&&this._run("lighting_console/shows/delete",{show_id:t.i
               uses — cues will capture every one of them automatically.
             </p>`:a`
               <ul class="rig">
-                ${t.members.map(r=>this._renderMember(r))}
+                ${t.members.map((i,r)=>this._renderMember(i,r,t.members.length))}
               </ul>
             `}
       </section>
-    `}_renderMember(t){let r=Et[t.capability];return a`
+    `}_renderMember(t,i,r){let s=kt[t.capability];return a`
       <li>
         <div class="member">
           <span class="member-name">${t.name}</span>
           <span class="entity-id">${t.entity_id}</span>
           <span class="detail">${t.reason}</span>
         </div>
-        <span class="chip ${r.tone}">${r.label}</span>
+        <span class="chip ${s.tone}">${s.label}</span>
+        <button
+          class="link"
+          title="Move up"
+          ?disabled=${this._busy||i===0}
+          @click=${()=>this._moveMember(i,-1)}
+        >
+          ↑
+        </button>
+        <button
+          class="link"
+          title="Move down"
+          ?disabled=${this._busy||i===r-1}
+          @click=${()=>this._moveMember(i,1)}
+        >
+          ↓
+        </button>
         <button
           class="link danger"
           ?disabled=${this._busy}
@@ -864,7 +1005,7 @@ This cannot be undone.`)&&this._run("lighting_console/shows/delete",{show_id:t.i
           Remove
         </button>
       </li>
-    `}_renderCandidates(){let t=this._filter.trim().toLowerCase(),r=(this._candidates??[]).filter(i=>!t||i.name.toLowerCase().includes(t)||i.entity_id.toLowerCase().includes(t));return a`
+    `}_renderCandidates(){let t=this._filter.trim().toLowerCase(),i=(this._candidates??[]).filter(r=>!t||r.name.toLowerCase().includes(t)||r.entity_id.toLowerCase().includes(t));return a`
       <section class="picker">
         <div class="section-head">
           <h2>Add to the rig</h2>
@@ -876,20 +1017,20 @@ This cannot be undone.`)&&this._run("lighting_console/shows/delete",{show_id:t.i
           type="search"
           placeholder="Filter lights and switches…"
           .value=${this._filter}
-          @input=${i=>{this._filter=i.target.value}}
+          @input=${r=>{this._filter=r.target.value}}
         />
-        ${r.length===0?a`<p class="detail">Nothing left to add.</p>`:a`
+        ${i.length===0?a`<p class="detail">Nothing left to add.</p>`:a`
               <ul class="rig">
-                ${r.map(i=>a`
+                ${i.map(r=>a`
                     <li>
                       <div class="member">
-                        <span class="member-name">${i.name}</span>
-                        <span class="entity-id">${i.entity_id}</span>
+                        <span class="member-name">${r.name}</span>
+                        <span class="entity-id">${r.entity_id}</span>
                       </div>
                       <button
                         class="link"
                         ?disabled=${this._busy}
-                        @click=${()=>this._add(i.entity_id)}
+                        @click=${()=>this._add(r.entity_id)}
                       >
                         Add
                       </button>
@@ -898,17 +1039,17 @@ This cannot be undone.`)&&this._run("lighting_console/shows/delete",{show_id:t.i
               </ul>
             `}
       </section>
-    `}_renderBuildStamp(){let t=this._info?`${this._info.version} \xB7 ${this._info.git_sha}`:"\u2014",r="0.4.0 \xB7 f844f4da27c4",i=this._info!==void 0&&this._info.version!=="0.4.0",n=this._bridge?.configured?this._bridge.scene_error?a`<span class="warn-text" title=${this._bridge.scene_error}>
+    `}_renderBuildStamp(){let t=this._info?`${this._info.version} \xB7 ${this._info.git_sha}`:"\u2014",i="0.5.0 \xB7 4bda023d226d",r=this._info!==void 0&&this._info.version!=="0.5.0",s=this._bridge?.configured?this._bridge.scene_error?a`<span class="warn-text" title=${this._bridge.scene_error}>
             scenes: ${this._bridge.scene_error}
           </span>`:a`<span class="stamp">${this._bridge.scene_count} scenes</span>`:d;return a`
-      ${n}
-      <span class="stamp ${i?"mismatch":""}">
-        card ${r} / backend ${t}
+      ${s}
+      <span class="stamp ${r?"mismatch":""}">
+        card ${i} / backend ${t}
       </span>
-      ${i?a`<span class="warn-text" title="Card and integration versions differ">
+      ${r?a`<span class="warn-text" title="Card and integration versions differ">
             version mismatch
           </span>`:d}
-    `}};_.styles=P`
+    `}};b.styles=M`
     .tabs {
       display: flex;
       gap: 4px;
@@ -1094,4 +1235,4 @@ This cannot be undone.`)&&this._run("lighting_console/shows/delete",{show_id:t.i
     .stamp.mismatch {
       color: var(--error-color, #db4437);
     }
-  `,u([R({attribute:!1})],_.prototype,"hass",2),u([m()],_.prototype,"_config",2),u([m()],_.prototype,"_info",2),u([m()],_.prototype,"_rig",2),u([m()],_.prototype,"_bridge",2),u([m()],_.prototype,"_candidates",2),u([m()],_.prototype,"_error",2),u([m()],_.prototype,"_busy",2),u([m()],_.prototype,"_adding",2),u([m()],_.prototype,"_filter",2),u([m()],_.prototype,"_tab",2);V(kt,_);St({type:kt,name:"Lighting Console",description:"Theatre lighting console \u2014 rig, cue list and effects.",preview:!1,documentationURL:"https://github.com/sremich/ha-lighting-console"});console.info("%c LIGHTING-CONSOLE %c 0.4.0 (f844f4da27c4) ","color:#fff;background:#3b5bdb;font-weight:700","color:#3b5bdb;background:#eef");export{_ as LightingConsoleCard};
+  `,m([C({attribute:!1})],b.prototype,"hass",2),m([g()],b.prototype,"_config",2),m([g()],b.prototype,"_info",2),m([g()],b.prototype,"_rig",2),m([g()],b.prototype,"_bridge",2),m([g()],b.prototype,"_candidates",2),m([g()],b.prototype,"_error",2),m([g()],b.prototype,"_busy",2),m([g()],b.prototype,"_adding",2),m([g()],b.prototype,"_filter",2),m([g()],b.prototype,"_tab",2);V(Ct,b);Et({type:Ct,name:"Lighting Console",description:"Theatre lighting console \u2014 rig, cue list and effects.",preview:!1,documentationURL:"https://github.com/sremich/ha-lighting-console"});console.info("%c LIGHTING-CONSOLE %c 0.5.0 (4bda023d226d) ","color:#fff;background:#3b5bdb;font-weight:700","color:#3b5bdb;background:#eef");export{b as LightingConsoleCard};
