@@ -1,0 +1,11 @@
+go:
+back:
+release:
+stop_effect:
+goto:
+  fields:
+    cue_id:
+      required: true
+      example: "LX5"
+      selector:
+        text:

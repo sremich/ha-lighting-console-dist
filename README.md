@@ -273,8 +273,33 @@ the longer versions of all of this:
   — putting the console on a dashboard
 - [Using the console](https://github.com/sremich/ha-lighting-console-dist/wiki/Using-the-Console)
   — the rig, shows, cues, playback and effects, at length
+- [Stream Deck](https://github.com/sremich/ha-lighting-console-dist/wiki/Stream-Deck)
+  — running the console from a Stream Deck or an automation
 - [Troubleshooting](https://github.com/sremich/ha-lighting-console-dist/wiki/Troubleshooting)
   — when something does not behave
+
+## Controlling from a Stream Deck or Home Assistant automations
+
+The integration registers five Home Assistant services, the same moves the
+card makes:
+
+- `lighting_console.go` — fire the next cue
+- `lighting_console.back` — go back one cue
+- `lighting_console.goto` — fire a cue by id or by label (e.g. "LX5"); a label
+  shared by two cues is refused, use the id
+- `lighting_console.release` — **blackout**: stops any effect, turns the whole
+  rig off and puts the show back to the top
+- `lighting_console.stop_effect` — stop the running effect, leaving the lights
+  as they are
+
+`sensor.lighting_console_cue` reports the cue on stage, the next cue, the show
+and whether an effect is running.
+
+A ready-made [Bitfocus Companion](https://bitfocus.io/companion) deck drives
+these from a Stream Deck: GO, BACK, CURRENT, STOP FX, a RELEASE key you have to
+hold for a second, and a STATUS key. It is in `docs/companion/`, with a setup
+guide (`docs/companion/README.md`). Tested with Companion 5.0.7. The same
+services work from any Home Assistant automation or script.
 
 ## About this repository
 

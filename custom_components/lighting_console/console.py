@@ -18,6 +18,7 @@ from typing import Any
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.dispatcher import async_dispatcher_send
 from homeassistant.helpers.storage import Store
 from homeassistant.util import dt as dt_util
 from homeassistant.util.uuid import random_uuid_hex
@@ -78,6 +79,14 @@ class Console:
         self.playback = Playback(hass, self.effects)
         self.playback.scene_recall = self.async_recall_scene
 
+        # Everything that moves the playhead, edits a cue list or starts or
+        # ends an effect reports through these three hooks, so the cue sensor
+        # needs no help from the individual commands.
+        self.signal = f"{DOMAIN}_changed_{entry.entry_id}"
+        self.shows.on_change = self.effects.on_change = self.playback.on_change = (
+            self._notify
+        )
+
         self._client: HueBridgeClient | None = None
         self._hue_lights: dict[str, HueLight] = {}
         self._entertainment: list[EntertainmentConfiguration] = []
@@ -105,6 +114,12 @@ class Console:
             )
             # Not fatal if this fails — the console must still come up.
             await self.async_refresh_bridge()
+
+    def _notify(self) -> None:
+        try:
+            async_dispatcher_send(self._hass, self.signal)
+        except Exception:  # a listener's bug must never stop a cue or Release
+            _LOGGER.exception("A change listener failed")
 
     @property
     def is_bridge_configured(self) -> bool:

@@ -15,15 +15,26 @@ import logging
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers.typing import ConfigType
 
 from .console import Console
 from .const import BUILD_GIT_SHA, BUILD_VERSION, DOMAIN
 from .frontend import async_register_card
+from .services import async_register_services
 from .websocket import async_register_commands
 
 _LOGGER = logging.getLogger(__name__)
 
-PLATFORMS: list[str] = []
+PLATFORMS: list[str] = ["sensor"]
+
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
+
+
+async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
+    """Register the services once. They outlive the entry and say so if it is gone."""
+    async_register_services(hass)
+    return True
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:

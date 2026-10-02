@@ -31,6 +31,7 @@ from __future__ import annotations
 
 import logging
 import re
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import Any
@@ -373,6 +374,8 @@ class ShowStore:
         )
         self._shows: list[Show] = []
         self._active_show_id: str | None = None
+        self.on_change: Callable[[], None] | None = None
+        """Called after every save — every show or cue edit ends in one."""
 
     # ------------------------------------------------------------------
     # Lifecycle
@@ -404,6 +407,8 @@ class ShowStore:
                 "active_show_id": self._active_show_id,
             }
         )
+        if self.on_change:
+            self.on_change()
 
     # ------------------------------------------------------------------
     # Shows

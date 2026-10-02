@@ -225,6 +225,8 @@ class Playback:
         self._hass = hass
         self._effects = effects
         self._current_cue_id: str | None = None
+        self.on_change: Callable[[], None] | None = None
+        """Called whenever the playhead moves or is cleared."""
         self.scene_recall: (
             Callable[[Cue, float], Awaitable[list[LightLevel]]] | None
         ) = None
@@ -251,9 +253,14 @@ class Playback:
             "effect": self._effects.status(),
         }
 
+    def _set_current(self, cue_id: str | None) -> None:
+        self._current_cue_id = cue_id
+        if self.on_change:
+            self.on_change()
+
     def reset(self) -> None:
         """Forget the playhead — on a show change, where it means nothing."""
-        self._current_cue_id = None
+        self._set_current(None)
 
     # ------------------------------------------------------------------
     # Firing cues
@@ -278,7 +285,7 @@ class Playback:
                 cue.effect_params,
                 resolve_targets(cue.effect_params, rig_entity_ids),
             )
-            self._current_cue_id = cue.id
+            self._set_current(cue.id)
             return
 
         fade = cue.fade if fade is None else fade
@@ -310,7 +317,7 @@ class Playback:
                 for domain, service, data in calls
             )
         )
-        self._current_cue_id = cue.id
+        self._set_current(cue.id)
 
     async def async_go(self, show: Any, rig_entity_ids: list[str]) -> Cue | None:
         """Fire the next cue. From nowhere, fires the first."""
@@ -352,7 +359,7 @@ class Playback:
         return cue
 
     async def async_release(self, rig_entity_ids: list[str]) -> None:
-        """Stop everything and hand the rig back to normal control.
+        """Blackout: stop any effect, turn the whole rig off, clear the playhead.
 
         This must work when nothing else does. It stops any effect first —
         that is the part that can otherwise keep driving lights forever — and
@@ -360,7 +367,7 @@ class Playback:
         starts from the top rather than from a cue nobody can see.
         """
         await self._effects.async_stop()
-        self._current_cue_id = None
+        self._set_current(None)
         if not rig_entity_ids:
             return
         by_domain: dict[str, list[str]] = {}

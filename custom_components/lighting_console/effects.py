@@ -32,6 +32,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -399,6 +400,8 @@ class EffectEngine:
         self._frame_ready = asyncio.Event()
         self._sent = 0
         self._dropped = 0
+        self.on_change: Callable[[], None] | None = None
+        """Called when an effect starts, stops, or ends on its own."""
 
     @property
     def frame_counts(self) -> tuple[int, int]:
@@ -469,6 +472,8 @@ class EffectEngine:
             f"lighting_console effect {name}",
             eager_start=False,
         )
+        if self.on_change:
+            self.on_change()
         return True
 
     async def async_stop(self) -> None:
@@ -481,6 +486,7 @@ class EffectEngine:
         """
         task, self._task = self._task, None
         pumps, self._pumps = self._pumps, []
+        was_running = self._running is not None
         self._running = None
         self._running_params = {}
 
@@ -502,6 +508,8 @@ class EffectEngine:
 
         self._pending = {}
         self._frame_ready.clear()
+        if was_running and self.on_change:
+            self.on_change()
 
     # ------------------------------------------------------------------
     # Execution
@@ -533,6 +541,8 @@ class EffectEngine:
             if self._running == name:
                 self._running = None
                 self._running_params = {}
+                if self.on_change:
+                    self.on_change()
 
     async def _async_pump(self) -> None:
         """Deliver frames to the lights, one at a time, latest wins.

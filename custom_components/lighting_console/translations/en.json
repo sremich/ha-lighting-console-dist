@@ -39,5 +39,33 @@
         }
       }
     }
+  },
+  "services": {
+    "go": {
+      "name": "Go",
+      "description": "Fire the next cue of the active show, or the first if nothing is on stage yet."
+    },
+    "back": {
+      "name": "Back",
+      "description": "Fire the previous cue of the active show."
+    },
+    "goto": {
+      "name": "Go to cue",
+      "description": "Fire a specific cue of the active show.",
+      "fields": {
+        "cue_id": {
+          "name": "Cue",
+          "description": "The cue's label as shown on the card (for example LX5; not case-sensitive), or its id. If two cues share a label, use the id."
+        }
+      }
+    },
+    "release": {
+      "name": "Release",
+      "description": "Stop any running effect, switch the whole rig off and clear the playhead, so the next Go starts from the top."
+    },
+    "stop_effect": {
+      "name": "Stop effect",
+      "description": "Stop the running effect, leaving the lights as they are."
+    }
   }
 }
