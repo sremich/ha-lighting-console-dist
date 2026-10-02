@@ -1051,7 +1051,7 @@ The show imported from it keeps every look, and a raw copy of the scenes is kept
               </ul>
             `}
       </section>
-    `}_renderBuildStamp(){let t=this._info?`${this._info.version} \xB7 ${this._info.git_sha}`:"\u2014",i="0.7.0 \xB7 c27ca9fd0389",r=this._info!==void 0&&this._info.version!=="0.7.0",s=this._bridge?.configured?this._bridge.scene_error?a`<span class="warn-text" title=${this._bridge.scene_error}>
+    `}_renderBuildStamp(){let t=this._info?`${this._info.version} \xB7 ${this._info.git_sha}`:"\u2014",i="0.7.1 \xB7 2fcb8b697dcd",r=this._info!==void 0&&this._info.version!=="0.7.1",s=this._bridge?.configured?this._bridge.scene_error?a`<span class="warn-text" title=${this._bridge.scene_error}>
             scenes: ${this._bridge.scene_error}
           </span>`:a`<span class="stamp">${this._bridge.scene_count} scenes</span>`:d;return a`
       ${s}
@@ -1247,4 +1247,4 @@ The show imported from it keeps every look, and a raw copy of the scenes is kept
     .stamp.mismatch {
       color: var(--error-color, #db4437);
     }
-  `,m([C({attribute:!1})],b.prototype,"hass",2),m([g()],b.prototype,"_config",2),m([g()],b.prototype,"_info",2),m([g()],b.prototype,"_rig",2),m([g()],b.prototype,"_bridge",2),m([g()],b.prototype,"_candidates",2),m([g()],b.prototype,"_error",2),m([g()],b.prototype,"_busy",2),m([g()],b.prototype,"_adding",2),m([g()],b.prototype,"_filter",2),m([g()],b.prototype,"_tab",2);V(Ct,b);Et({type:Ct,name:"Lighting Console",description:"Theatre lighting console \u2014 rig, cue list and effects.",preview:!1,documentationURL:"https://github.com/sremich/ha-lighting-console"});console.info("%c LIGHTING-CONSOLE %c 0.7.0 (c27ca9fd0389) ","color:#fff;background:#3b5bdb;font-weight:700","color:#3b5bdb;background:#eef");export{b as LightingConsoleCard};
+  `,m([C({attribute:!1})],b.prototype,"hass",2),m([g()],b.prototype,"_config",2),m([g()],b.prototype,"_info",2),m([g()],b.prototype,"_rig",2),m([g()],b.prototype,"_bridge",2),m([g()],b.prototype,"_candidates",2),m([g()],b.prototype,"_error",2),m([g()],b.prototype,"_busy",2),m([g()],b.prototype,"_adding",2),m([g()],b.prototype,"_filter",2),m([g()],b.prototype,"_tab",2);V(Ct,b);Et({type:Ct,name:"Lighting Console",description:"Theatre lighting console \u2014 rig, cue list and effects.",preview:!1,documentationURL:"https://github.com/sremich/ha-lighting-console"});console.info("%c LIGHTING-CONSOLE %c 0.7.1 (2fcb8b697dcd) ","color:#fff;background:#3b5bdb;font-weight:700","color:#3b5bdb;background:#eef");export{b as LightingConsoleCard};

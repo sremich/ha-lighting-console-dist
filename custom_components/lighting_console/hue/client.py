@@ -153,13 +153,27 @@ class HueBridgeClient:
         )
 
     @staticmethod
-    def _unwrap_v2(payload: Any, resource: str) -> list[dict[str, Any]]:
-        """Return the `data` array from a CLIP v2 response, or raise."""
+    def _unwrap_v2(
+        payload: Any, resource: str, *, read: bool = False
+    ) -> list[dict[str, Any]]:
+        """Return the `data` array from a CLIP v2 response, or raise.
+
+        On a read, `errors` next to a `data` array are warnings about
+        individual resources, not a failed request: a bridge whose Hue-app
+        scene still targets a light since moved out of its room answers
+        "Light action targets not matching lights in referenced group" on
+        every scene list, and the list itself is complete. One stale scene
+        nobody can see must not stop the console reading the bridge.
+        """
         if not isinstance(payload, dict):
             raise HueApiError(f"Unexpected response reading {resource}: {payload!r}")
-        if errors := payload.get("errors"):
-            raise HueApiError(f"Bridge reported errors reading {resource}: {errors}")
         data = payload.get("data")
+        if errors := payload.get("errors"):
+            if not (read and isinstance(data, list)):
+                raise HueApiError(
+                    f"Bridge reported errors reading {resource}: {errors}"
+                )
+            _LOGGER.warning("Bridge warnings reading %s: %s", resource, errors)
         if data is None:
             raise HueApiError(f"No data in the bridge response for {resource}")
         return list(data)
@@ -229,7 +243,8 @@ class HueBridgeClient:
     async def async_get_lights(self) -> list[HueLight]:
         payload = await self._request("GET", "/clip/v2/resource/light")
         return [
-            HueLight.from_resource(item) for item in self._unwrap_v2(payload, "lights")
+            HueLight.from_resource(item)
+            for item in self._unwrap_v2(payload, "lights", read=True)
         ]
 
     async def async_get_entertainment_configurations(
@@ -250,7 +265,9 @@ class HueBridgeClient:
 
         # entertainment service id -> owning device id
         service_owner: dict[str, str] = {}
-        for item in self._unwrap_v2(entertainment_payload, "entertainment services"):
+        for item in self._unwrap_v2(
+            entertainment_payload, "entertainment services", read=True
+        ):
             owner = item.get("owner") or {}
             if owner.get("rid"):
                 service_owner[item["id"]] = owner["rid"]
@@ -262,7 +279,9 @@ class HueBridgeClient:
                 device_lights.setdefault(light.owner_id, []).append(light.id)
 
         configurations: list[EntertainmentConfiguration] = []
-        for item in self._unwrap_v2(configs_payload, "entertainment configurations"):
+        for item in self._unwrap_v2(
+            configs_payload, "entertainment configurations", read=True
+        ):
             channel_light_ids: dict[int, list[str]] = {}
             for channel in item.get("channels") or []:
                 channel_id = channel.get("channel_id")
@@ -314,7 +333,7 @@ class HueBridgeClient:
 
         groups: list[HueGroup] = []
         for payload, group_type in ((rooms_payload, "room"), (zones_payload, "zone")):
-            for item in self._unwrap_v2(payload, f"{group_type}s"):
+            for item in self._unwrap_v2(payload, f"{group_type}s", read=True):
                 light_ids: list[str] = []
                 for child in item.get("children") or []:
                     rid = child.get("rid")
@@ -340,7 +359,8 @@ class HueBridgeClient:
         """Every scene on the bridge, with its per-light actions."""
         payload = await self._request("GET", "/clip/v2/resource/scene")
         return [
-            HueScene.from_resource(item) for item in self._unwrap_v2(payload, "scenes")
+            HueScene.from_resource(item)
+            for item in self._unwrap_v2(payload, "scenes", read=True)
         ]
 
     # ------------------------------------------------------------------
