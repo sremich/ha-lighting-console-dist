@@ -283,6 +283,12 @@ class Console:
                         if cue.kind is CueKind.LOOK
                         else []
                     )
+                    # The bridge refuses a scene that does not set every
+                    # light in its group, and the zone is the whole rig: a
+                    # look that leaves a lamp alone stays on the per-light
+                    # path instead of stopping the compile.
+                    if {a["target"]["rid"] for a in actions} != set(light_ids.values()):
+                        actions = []
                     scene_id = None
                     if actions:
                         key = look_key(actions)
